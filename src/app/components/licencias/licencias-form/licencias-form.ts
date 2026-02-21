@@ -1,10 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { LicenciasService } from '../../../services/licencias.service';
-import { PersonalService } from '../../../services/personal.service';
-import { Personal } from '../../../models/personal.model';
 import { Licencia } from '../../../models/licencia.model';
 
 @Component({
@@ -16,28 +14,32 @@ import { Licencia } from '../../../models/licencia.model';
 })
 export class LicenciasFormComponent implements OnInit {
   licenciaForm!: FormGroup;
-  listaEmpleados: Personal[] = [];
+  personaSeleccionada: {
+    idPersona: number;
+    cedula: string;
+    nombreCompleto: string;
+    puestoTrabajo: string;
+  } | null = null;
   
   cargando: boolean = false;
-  cargandoEmpleados: boolean = false;
   mensajeError: string = '';
   mensajeExito: string = '';
 
   constructor(
     private fb: FormBuilder,
     private licenciasService: LicenciasService,
-    private personalService: PersonalService,
+    private route: ActivatedRoute,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.inicializarFormulario();
-    this.cargarEmpleadosSelect();
+    this.cargarPersonaDesdeRuta();
   }
 
   inicializarFormulario(): void {
     this.licenciaForm = this.fb.group({
-      idPersona: ['', [Validators.required]],
+      idPersona: [null, [Validators.required]],
       noLicencia: ['', [Validators.required, Validators.maxLength(50)]],
       fecLicenciaIni: ['', [Validators.required]],
       fecLicenciaFin: ['', [Validators.required]],
@@ -47,27 +49,37 @@ export class LicenciasFormComponent implements OnInit {
     });
   }
 
-  cargarEmpleadosSelect(): void {
-    this.cargandoEmpleados = true;
-    const token = localStorage.getItem('token') || '';
-    
-    // Traemos todo el personal activo para llenar el <select>
-    this.personalService.getPersonal(token, 60).subscribe({
-      next: (data) => {
-        this.listaEmpleados = data;
-      },
-      error: () => {
-        this.mensajeError = 'No se pudo cargar la lista de empleados. Verifique su conexión.';
-      },
-      complete: () => {
-        this.cargandoEmpleados = false;
-      }
-    });
+  cargarPersonaDesdeRuta(): void {
+    const params = this.route.snapshot.queryParamMap;
+
+    const idPersona = Number(params.get('idPersona') || 0);
+    const cedula = params.get('cedula') || '';
+    const nombreCompleto = params.get('nombreCompleto') || '';
+    const puestoTrabajo = params.get('puestoTrabajo') || '';
+
+    if (!idPersona) {
+      this.mensajeError = 'Debe seleccionar una persona desde el listado de personal para registrar la licencia.';
+      return;
+    }
+
+    this.personaSeleccionada = {
+      idPersona,
+      cedula,
+      nombreCompleto,
+      puestoTrabajo
+    };
+
+    this.licenciaForm.patchValue({ idPersona });
   }
 
   guardar(): void {
     if (this.licenciaForm.invalid) {
       this.licenciaForm.markAllAsTouched();
+      return;
+    }
+
+    if (!this.personaSeleccionada) {
+      this.mensajeError = 'No hay una persona seleccionada para asociar la licencia.';
       return;
     }
 
@@ -102,7 +114,7 @@ export class LicenciasFormComponent implements OnInit {
       next: (res) => {
         this.mensajeExito = res.message || 'Licencia registrada exitosamente.';
         setTimeout(() => {
-          this.router.navigate(['/home/licencias']);
+          this.router.navigate(['/home/personal']);
         }, 1500);
       },
       error: (err) => {
