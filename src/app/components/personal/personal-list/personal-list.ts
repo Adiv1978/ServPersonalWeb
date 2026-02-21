@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -22,8 +22,7 @@ export class PersonalListComponent implements OnInit {
 
   constructor(
     private personalService: PersonalService,
-    @Inject(PLATFORM_ID) private platformId: Object,
-    private cdr: ChangeDetectorRef
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
@@ -38,7 +37,6 @@ export class PersonalListComponent implements OnInit {
     this.busquedaRealizada = false; // Reset para el estado visual
     this.mensajeError = '';
     this.listaPersonal = []; // Limpieza preventiva
-    this.cdr.detectChanges();
 
     const token = localStorage.getItem('token') || '';
     
@@ -47,7 +45,6 @@ export class PersonalListComponent implements OnInit {
         finalize(() => {
           this.cargando = false;
           this.busquedaRealizada = true;
-          this.cdr.detectChanges();
         })
       )
       .subscribe({
