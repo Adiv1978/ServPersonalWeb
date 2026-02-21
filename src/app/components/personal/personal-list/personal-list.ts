@@ -69,4 +69,21 @@ export class PersonalListComponent implements OnInit {
         }
       });
   }
+
+  obtenerIdPersona(persona: Personal | Record<string, any>): number | null {
+    const personaLike = persona as Personal & { idPersona?: number | string };
+    const idRaw = personaLike?.id ?? personaLike?.idPersona;
+    const id = Number(idRaw);
+
+    return Number.isFinite(id) && id > 0 ? id : null;
+  }
+
+  obtenerNombreCompleto(persona: Personal | Record<string, any>): string {
+    const nombreCompleto = (persona?.nombreCompleto || '').trim();
+    if (nombreCompleto) return nombreCompleto;
+
+    const nombre = (persona?.nombre || '').trim();
+    const apellidos = (persona?.apellidos || '').trim();
+    return `${nombre} ${apellidos}`.trim();
+  }
 }
