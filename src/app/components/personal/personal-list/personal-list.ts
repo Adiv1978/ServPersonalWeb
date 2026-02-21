@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -22,7 +22,8 @@ export class PersonalListComponent implements OnInit {
 
   constructor(
     private personalService: PersonalService,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -33,39 +34,50 @@ export class PersonalListComponent implements OnInit {
     // Protección para no tocar localStorage en el servidor (Node.js)
     if (!isPlatformBrowser(this.platformId)) return;
 
-    this.cargando = true;
-    this.busquedaRealizada = false; // Reset para el estado visual
+    // 1. LIMPIEZA ABSOLUTA: Vaciamos la plantilla inmediatamente
+    this.listaPersonal = []; 
     this.mensajeError = '';
-    this.listaPersonal = []; // Limpieza preventiva
+    this.busquedaRealizada = false;
+    this.cargando = true;
+    
+    // 2. FORZAR REPINTADO: Obligamos a Angular a ocultar la tabla antigua AHORA
+    this.cdr.detectChanges(); 
 
     const token = localStorage.getItem('token') || '';
     
     this.personalService.getPersonal(token, 60, 0, this.busqueda)
       .pipe(
         finalize(() => {
-          this.cargando = false;
-          this.busquedaRealizada = true;
+          setTimeout(() => {
+            this.cargando = false;
+            this.busquedaRealizada = true;
+            this.cdr.detectChanges(); // Repintado final (muestra tabla nueva o mensaje)
+          }, 10);
         })
       )
       .subscribe({
         next: (response: any) => {
           console.log('Respuesta del Backend:', response);
-          // Mapeo flexible para evitar que la tabla rompa si el formato cambia
+          
           if (Array.isArray(response)) {
-            this.listaPersonal = response;
-          } else if (response && response.value) {
-            this.listaPersonal = response.value;
-          } else if (response && response.data) {
-            this.listaPersonal = response.data;
+            this.listaPersonal = [...response]; 
+          } else if (response && Array.isArray(response.value)) {
+            this.listaPersonal = [...response.value];
+          } else if (response && Array.isArray(response.data)) {
+            this.listaPersonal = [...response.data];
           } else {
+            // Si el backend responde 200 OK pero sin datos útiles
             this.listaPersonal = [];
           }
         },
         error: (err) => {
           console.error('Error en la petición:', err);
-          this.mensajeError = 'No se pudo conectar con el servidor.';
+          // Si enviamos datos incorrectos y .NET arroja error (ej. 400 o 404)
+          // Garantizamos que la lista se mantenga vacía y mostramos un error amigable
           this.listaPersonal = [];
-          this.busquedaRealizada = true;
+          
+          // Muestra el mensaje de error del backend si existe, o uno genérico
+          this.mensajeError = err.error?.message || 'No se encontraron resultados con esos datos.';
         }
       });
   }
