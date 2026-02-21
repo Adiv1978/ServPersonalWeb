@@ -1,0 +1,94 @@
+<div class="container-fluid py-3">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h3 mb-0 text-gray-800">Registrar Nueva Licencia Médica</h2>
+    <a routerLink="/home/licencias" class="btn btn-outline-secondary shadow-sm">
+      Volver al Listado
+    </a>
+  </div>
+
+  <div class="card shadow mb-4" style="max-width: 900px; margin: 0 auto;">
+    <div class="card-body p-4">
+
+      <div class="alert alert-danger" *ngIf="mensajeError">{{ mensajeError }}</div>
+      <div class="alert alert-success" *ngIf="mensajeExito">{{ mensajeExito }}</div>
+
+      <form [formGroup]="licenciaForm" (ngSubmit)="guardar()">
+        
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="idPersona" class="form-label fw-medium">Empleado</label>
+            <select id="idPersona" class="form-select" formControlName="idPersona"
+                    [ngClass]="{'is-invalid': licenciaForm.get('idPersona')?.invalid && licenciaForm.get('idPersona')?.touched}">
+              <option value="" disabled selected>Seleccione un empleado...</option>
+              <option *ngIf="cargandoEmpleados" value="">Cargando empleados...</option>
+              <option *ngFor="let emp of listaEmpleados" [value]="emp.id">
+                {{ emp.cedula }} - {{ emp.nombreCompleto }}
+              </option>
+            </select>
+            <div class="invalid-feedback">Debe seleccionar un empleado.</div>
+          </div>
+          
+          <div class="col-md-6 mt-3 mt-md-0">
+            <label for="noLicencia" class="form-label fw-medium">Número de Licencia</label>
+            <input type="text" id="noLicencia" class="form-control" formControlName="noLicencia" placeholder="Ej: L-2026-001"
+                   [ngClass]="{'is-invalid': licenciaForm.get('noLicencia')?.invalid && licenciaForm.get('noLicencia')?.touched}">
+            <div class="invalid-feedback">El número de licencia es requerido.</div>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="fecLicenciaIni" class="form-label fw-medium">Fecha de Inicio</label>
+            <input type="date" id="fecLicenciaIni" class="form-control" formControlName="fecLicenciaIni"
+                   [ngClass]="{'is-invalid': licenciaForm.get('fecLicenciaIni')?.invalid && licenciaForm.get('fecLicenciaIni')?.touched}">
+            <div class="invalid-feedback">La fecha de inicio es requerida.</div>
+          </div>
+
+          <div class="col-md-6 mt-3 mt-md-0">
+            <label for="fecLicenciaFin" class="form-label fw-medium">Fecha de Fin</label>
+            <input type="date" id="fecLicenciaFin" class="form-control" formControlName="fecLicenciaFin"
+                   [ngClass]="{'is-invalid': licenciaForm.get('fecLicenciaFin')?.invalid && licenciaForm.get('fecLicenciaFin')?.touched}">
+            <div class="invalid-feedback">La fecha de fin es requerida.</div>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-12">
+            <label for="diagnostico" class="form-label fw-medium">Diagnóstico Médico</label>
+            <input type="text" id="diagnostico" class="form-control" formControlName="diagnostico"
+                   [ngClass]="{'is-invalid': licenciaForm.get('diagnostico')?.invalid && licenciaForm.get('diagnostico')?.touched}">
+            <div class="invalid-feedback">El diagnóstico es requerido.</div>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <div class="col-12">
+            <label for="observacion" class="form-label fw-medium">Observaciones Adicionales (Opcional)</label>
+            <textarea id="observacion" class="form-control" formControlName="observacion" rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" role="switch" id="auditoria" formControlName="auditoria">
+              <label class="form-check-label fw-medium text-danger" for="auditoria">Marcar para Auditoría Médica</label>
+            </div>
+            <small class="text-muted">Active esta casilla si la licencia requiere una revisión especial por parte de recursos humanos.</small>
+          </div>
+        </div>
+
+        <hr class="mt-4 mb-4">
+        <div class="d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-light" routerLink="/home/licencias" [disabled]="cargando">Cancelar</button>
+          <button type="submit" class="btn btn-primary px-4" [disabled]="cargando">
+            <span *ngIf="cargando" class="spinner-border spinner-border-sm me-2" role="status"></span>
+            Registrar Licencia
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

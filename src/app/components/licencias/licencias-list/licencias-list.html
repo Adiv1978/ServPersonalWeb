@@ -1,0 +1,92 @@
+<div class="container-fluid py-3">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h3 mb-0 text-gray-800">Control de Licencias Médicas</h2>
+    <a routerLink="/home/licencias/nuevo" class="btn btn-primary shadow-sm">
+      + Registrar Licencia
+    </a>
+  </div>
+
+  <div class="alert alert-danger" *ngIf="mensajeError">
+    {{ mensajeError }}
+  </div>
+
+  <div class="card shadow mb-4">
+    <div class="card-body bg-light">
+      <div class="row align-items-end">
+        
+        <div class="col-md-3">
+          <label class="form-label fw-medium text-muted small mb-1">Desde (Inicio)</label>
+          <input type="date" class="form-control" [(ngModel)]="filtroFecIni">
+        </div>
+        
+        <div class="col-md-3 mt-3 mt-md-0">
+          <label class="form-label fw-medium text-muted small mb-1">Hasta (Fin)</label>
+          <input type="date" class="form-control" [(ngModel)]="filtroFecFin">
+        </div>
+        
+        <div class="col-md-6 mt-3 mt-md-0 d-flex gap-2 justify-content-md-end">
+          <button class="btn btn-secondary" (click)="limpiarFiltros()">Limpiar</button>
+          <button class="btn btn-dark px-4" (click)="buscar()">Filtrar</button>
+          <button class="btn btn-success" (click)="descargarExcel()" [disabled]="descargando || listaLicencias.length === 0">
+            <span *ngIf="descargando" class="spinner-border spinner-border-sm me-2"></span>
+            <i class="bi bi-file-earmark-excel me-1"></i> Exportar Excel
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow mb-4">
+    <div class="card-body">
+      
+      <div class="text-center py-5" *ngIf="cargando">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+      </div>
+
+      <div class="table-responsive" *ngIf="!cargando">
+        <table class="table table-striped table-hover align-middle">
+          <thead class="table-dark">
+            <tr>
+              <th>No. Licencia</th>
+              <th>Empleado</th>
+              <th>Desde</th>
+              <th>Hasta</th>
+              <th class="text-center">Días</th>
+              <th>Diagnóstico</th>
+              <th class="text-center">Auditoría</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let lic of listaLicencias">
+              <td class="fw-bold">{{ lic.noLicencia }}</td>
+              <td>
+                <div class="fw-medium">{{ lic.empleadoNombreCompleto }}</div>
+                <div class="text-muted small">C.I: {{ lic.empleadoCedula }}</div>
+              </td>
+              <td>{{ lic.fecLicenciaIni | date:'dd/MM/yyyy' }}</td>
+              <td>{{ lic.fecLicenciaFin | date:'dd/MM/yyyy' }}</td>
+              <td class="text-center">
+                <span class="badge bg-info text-dark">{{ lic.tiempoLicencia }}</span>
+              </td>
+              <td>{{ lic.diagnostico }}</td>
+              <td class="text-center">
+                <span class="badge bg-danger" *ngIf="lic.auditoria">Sí</span>
+                <span class="badge bg-secondary" *ngIf="!lic.auditoria">No</span>
+              </td>
+            </tr>
+            <tr *ngIf="listaLicencias.length === 0">
+              <td colspan="7" class="text-center text-muted py-4">
+                No se encontraron licencias médicas para los filtros seleccionados.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>

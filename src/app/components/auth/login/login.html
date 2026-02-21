@@ -1,0 +1,45 @@
+<div class="bg-light vh-100 d-flex justify-content-center align-items-center">
+  
+  <div class="card shadow p-3" style="width: 100%; max-width: 400px;">
+    <div class="card-body">
+      
+      <h3 class="card-title text-center mb-1">ServPersonal</h3>
+      <p class="text-center text-muted mb-4">Inicia sesión en tu cuenta</p>
+
+      <div class="alert alert-danger text-center" *ngIf="mensajeError">
+        {{ mensajeError }}
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        
+        <div class="mb-3">
+          <label for="nick" class="form-label fw-medium">Usuario</label>
+          <input type="text" id="nick" formControlName="nick" class="form-control" placeholder="Ingresa tu nick" />
+          <div class="text-danger small mt-1" *ngIf="loginForm.get('nick')?.invalid && loginForm.get('nick')?.touched">
+            El usuario es requerido.
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="pass" class="form-label fw-medium">Contraseña</label>
+          <input type="password" id="pass" formControlName="pass" class="form-control" placeholder="Ingresa tu contraseña" />
+          <div class="text-danger small mt-1" *ngIf="loginForm.get('pass')?.invalid && loginForm.get('pass')?.touched">
+            La contraseña es requerida.
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label for="minutos" class="form-label fw-medium">Tiempo de Sesión (Minutos)</label>
+          <input type="number" id="minutos" formControlName="minutos" class="form-control" />
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-2" [disabled]="cargando">
+          <span *ngIf="cargando" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          <span *ngIf="cargando">Ingresando...</span>
+          <span *ngIf="!cargando">Ingresar</span>
+        </button>
+
+      </form>
+    </div>
+  </div>
+</div>
