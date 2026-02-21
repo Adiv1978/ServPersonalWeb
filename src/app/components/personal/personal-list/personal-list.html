@@ -55,7 +55,7 @@
         <tbody>
           <tr *ngFor="let persona of listaPersonal">
             <td class="fw-bold">{{ persona?.cedula }}</td>
-            <td>{{ persona?.nombreCompleto }}</td>
+            <td>{{ obtenerNombreCompleto(persona) }}</td>
             <td><span class="badge bg-light text-dark border">{{ persona?.puestoTrabajo }}</span></td>
             <td class="text-center">
               <button class="btn btn-sm btn-outline-primary me-2">Editar</button>
@@ -63,11 +63,13 @@
                 class="btn btn-sm btn-outline-success me-2"
                 [routerLink]="['/home/licencias/nuevo']"
                 [queryParams]="{
-                  idPersona: persona?.id,
+                  idPersona: obtenerIdPersona(persona),
                   cedula: persona?.cedula,
-                  nombreCompleto: persona?.nombreCompleto,
+                  nombreCompleto: obtenerNombreCompleto(persona),
                   puestoTrabajo: persona?.puestoTrabajo
                 }"
+                [class.disabled]="!obtenerIdPersona(persona)"
+                [attr.aria-disabled]="!obtenerIdPersona(persona)"
               >
                 Agregar licencia
               </a>
