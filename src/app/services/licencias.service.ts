@@ -7,7 +7,7 @@ import { Licencia } from '../models/licencia.model';
   providedIn: 'root'
 })
 export class LicenciasService {
-  private apiUrl = 'https://localhost:32783/api/Licencias';
+  private apiUrl = 'https://localhost:32785/api/Licencias';
 
   constructor(private http: HttpClient) { }
 
