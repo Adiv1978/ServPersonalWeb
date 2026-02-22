@@ -13,19 +13,33 @@
 
   <div class="card shadow mb-4">
     <div class="card-body bg-light">
-      <div class="row align-items-end">
-        
-        <div class="col-md-3">
+      <div class="row align-items-end g-3">
+        <div class="col-md-2">
+          <label class="form-label fw-medium text-muted small mb-1">ID Persona</label>
+          <input type="number" min="0" class="form-control" [(ngModel)]="filtroIdPersona">
+        </div>
+
+        <div class="col-md-2">
           <label class="form-label fw-medium text-muted small mb-1">Desde (Inicio)</label>
           <input type="date" class="form-control" [(ngModel)]="filtroFecIni">
         </div>
-        
-        <div class="col-md-3 mt-3 mt-md-0">
+
+        <div class="col-md-2">
           <label class="form-label fw-medium text-muted small mb-1">Hasta (Fin)</label>
           <input type="date" class="form-control" [(ngModel)]="filtroFecFin">
         </div>
-        
-        <div class="col-md-6 mt-3 mt-md-0 d-flex gap-2 justify-content-md-end">
+
+        <div class="col-md-2">
+          <label class="form-label fw-medium text-muted small mb-1">Registro Desde</label>
+          <input type="date" class="form-control" [(ngModel)]="filtroRegDesde">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label fw-medium text-muted small mb-1">Registro Hasta</label>
+          <input type="date" class="form-control" [(ngModel)]="filtroRegHasta">
+        </div>
+
+        <div class="col-md-2 d-flex gap-2 justify-content-md-end flex-wrap">
           <button class="btn btn-secondary" (click)="limpiarFiltros()">Limpiar</button>
           <button class="btn btn-dark px-4" (click)="buscar()">Filtrar</button>
           <button class="btn btn-success" (click)="descargarExcel()" [disabled]="descargando || listaLicencias.length === 0">

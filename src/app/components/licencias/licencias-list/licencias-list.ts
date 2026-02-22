@@ -18,6 +18,9 @@ export class LicenciasListComponent implements OnInit {
   // Filtros
   filtroFecIni: string = '';
   filtroFecFin: string = '';
+  filtroRegDesde: string = '';
+  filtroRegHasta: string = '';
+  filtroIdPersona: number = 0;
   
   cargando: boolean = false;
   descargando: boolean = false;
@@ -39,8 +42,11 @@ export class LicenciasListComponent implements OnInit {
     // Pasamos los filtros (si están vacíos, se enviarán como undefined gracias a la lógica del servicio)
     const fecIni = this.filtroFecIni ? this.filtroFecIni : undefined;
     const fecFin = this.filtroFecFin ? this.filtroFecFin : undefined;
+    const regDesde = this.filtroRegDesde ? this.filtroRegDesde : undefined;
+    const regHasta = this.filtroRegHasta ? this.filtroRegHasta : undefined;
+    const idPersona = this.filtroIdPersona || 0;
 
-    this.licenciasService.getLicencias(token, minutos, 0, fecIni, fecFin).subscribe({
+    this.licenciasService.getLicencias(token, minutos, idPersona, fecIni, fecFin, regDesde, regHasta).subscribe({
       next: (data) => {
         this.listaLicencias = data;
       },
@@ -61,6 +67,9 @@ export class LicenciasListComponent implements OnInit {
   limpiarFiltros(): void {
     this.filtroFecIni = '';
     this.filtroFecFin = '';
+    this.filtroRegDesde = '';
+    this.filtroRegHasta = '';
+    this.filtroIdPersona = 0;
     this.cargarLicencias();
   }
 
