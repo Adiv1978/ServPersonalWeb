@@ -19,7 +19,15 @@ export class LicenciasService {
     return this.http.post<any>(`${this.apiUrl}/Set`, licencia, { params });
   }
 
-  getLicencias(token: string, minutos: number, idPersona: number = 0, fecIni?: string, fecFin?: string): Observable<Licencia[]> {
+  getLicencias(
+    token: string,
+    minutos: number,
+    idPersona: number = 0,
+    fecIni?: string,
+    fecFin?: string,
+    regDesde?: string,
+    regHasta?: string
+  ): Observable<Licencia[]> {
     let params = new HttpParams()
       .set('token', token)
       .set('minutos', minutos.toString())
@@ -27,6 +35,8 @@ export class LicenciasService {
 
     if (fecIni) params = params.set('fecIni', fecIni);
     if (fecFin) params = params.set('fecFin', fecFin);
+    if (regDesde) params = params.set('regDesde', regDesde);
+    if (regHasta) params = params.set('regHasta', regHasta);
 
     return this.http.get<Licencia[]>(`${this.apiUrl}/Get`, { params });
   }
