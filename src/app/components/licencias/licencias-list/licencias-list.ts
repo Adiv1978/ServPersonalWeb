@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -14,7 +14,7 @@ import { Personal } from '../../../models/personal.model';
   templateUrl: './licencias-list.html',
   styleUrls: ['./licencias-list.css']
 })
-export class LicenciasListComponent implements OnInit {
+export class LicenciasListComponent {
   listaLicencias: Licencia[] = [];
   
   // Filtros
@@ -33,12 +33,6 @@ export class LicenciasListComponent implements OnInit {
     private licenciasService: LicenciasService,
     private personalService: PersonalService
   ) {}
-
-  ngOnInit(): void {
-    // Diferimos la carga inicial para evitar cambios de estado dentro del
-    // mismo ciclo de detección que dispara NG0100 en modo desarrollo.
-    setTimeout(() => this.cargarLicencias());
-  }
 
   cargarLicencias(): void {
     this.cargando = true;
@@ -120,7 +114,9 @@ export class LicenciasListComponent implements OnInit {
     this.filtroRegDesde = '';
     this.filtroRegHasta = '';
     this.filtroCedulaPersona = '';
-    this.cargarLicencias();
+    this.mensajeError = '';
+    this.mensajeInfo = '';
+    this.listaLicencias = [];
   }
 
   onCedulaInput(event: Event): void {
