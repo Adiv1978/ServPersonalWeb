@@ -29,7 +29,9 @@ export class LicenciasListComponent implements OnInit {
   constructor(private licenciasService: LicenciasService) {}
 
   ngOnInit(): void {
-    this.cargarLicencias();
+    // Diferimos la carga inicial para evitar cambios de estado dentro del
+    // mismo ciclo de detección que dispara NG0100 en modo desarrollo.
+    setTimeout(() => this.cargarLicencias());
   }
 
   cargarLicencias(): void {
