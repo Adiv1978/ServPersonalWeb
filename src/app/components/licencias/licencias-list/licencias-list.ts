@@ -4,6 +4,8 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { LicenciasService } from '../../../services/licencias.service';
 import { Licencia } from '../../../models/licencia.model';
+import { PersonalService } from '../../../services/personal.service';
+import { Personal } from '../../../models/personal.model';
 
 @Component({
   selector: 'app-licencias-list',
@@ -20,13 +22,17 @@ export class LicenciasListComponent implements OnInit {
   filtroFecFin: string = '';
   filtroRegDesde: string = '';
   filtroRegHasta: string = '';
-  filtroIdPersona: number = 0;
+  filtroCedulaPersona: string = '';
   
   cargando: boolean = false;
   descargando: boolean = false;
   mensajeError: string = '';
+  mensajeInfo: string = '';
 
-  constructor(private licenciasService: LicenciasService) {}
+  constructor(
+    private licenciasService: LicenciasService,
+    private personalService: PersonalService
+  ) {}
 
   ngOnInit(): void {
     // Diferimos la carga inicial para evitar cambios de estado dentro del
@@ -37,6 +43,7 @@ export class LicenciasListComponent implements OnInit {
   cargarLicencias(): void {
     this.cargando = true;
     this.mensajeError = '';
+    this.mensajeInfo = '';
 
     const token = localStorage.getItem('token') || '';
     const minutos = 60;
@@ -46,13 +53,54 @@ export class LicenciasListComponent implements OnInit {
     const fecFin = this.filtroFecFin ? this.filtroFecFin : undefined;
     const regDesde = this.filtroRegDesde ? this.filtroRegDesde : undefined;
     const regHasta = this.filtroRegHasta ? this.filtroRegHasta : undefined;
-    const idPersona = this.filtroIdPersona || 0;
+    const cedula = this.filtroCedulaPersona.trim();
+
+    if (cedula) {
+      this.personalService.getPersonal(token, minutos, 0, cedula).subscribe({
+        next: (personas: Personal[]) => {
+          const persona = personas?.[0];
+
+          if (!persona) {
+            this.listaLicencias = [];
+            this.mensajeInfo = 'La cédula indicada no existe.';
+            this.cargando = false;
+            return;
+          }
+
+          this.consultarLicencias(token, minutos, persona.id, fecIni, fecFin, regDesde, regHasta);
+        },
+        error: (err) => {
+          this.listaLicencias = [];
+          this.mensajeError = err.error?.message || 'Error al validar la cédula de la persona.';
+          this.cargando = false;
+        }
+      });
+      return;
+    }
+
+    this.consultarLicencias(token, minutos, 0, fecIni, fecFin, regDesde, regHasta);
+  }
+
+  private consultarLicencias(
+    token: string,
+    minutos: number,
+    idPersona: number,
+    fecIni?: string,
+    fecFin?: string,
+    regDesde?: string,
+    regHasta?: string
+  ): void {
 
     this.licenciasService.getLicencias(token, minutos, idPersona, fecIni, fecFin, regDesde, regHasta).subscribe({
       next: (data) => {
-        this.listaLicencias = data;
+        this.listaLicencias = data || [];
+
+        if (this.listaLicencias.length === 0) {
+          this.mensajeInfo = 'Registro no encontrado.';
+        }
       },
       error: (err) => {
+        this.listaLicencias = [];
         this.mensajeError = err.error?.message || 'Error al cargar las licencias médicas.';
         this.cargando = false;
       },
@@ -71,8 +119,23 @@ export class LicenciasListComponent implements OnInit {
     this.filtroFecFin = '';
     this.filtroRegDesde = '';
     this.filtroRegHasta = '';
-    this.filtroIdPersona = 0;
+    this.filtroCedulaPersona = '';
     this.cargarLicencias();
+  }
+
+  onCedulaInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const soloDigitos = input.value.replace(/\D/g, '').slice(0, 11);
+
+    let formateada = soloDigitos;
+    if (soloDigitos.length > 3) {
+      formateada = `${soloDigitos.slice(0, 3)}-${soloDigitos.slice(3)}`;
+    }
+    if (soloDigitos.length > 10) {
+      formateada = `${soloDigitos.slice(0, 3)}-${soloDigitos.slice(3, 10)}-${soloDigitos.slice(10, 11)}`;
+    }
+
+    this.filtroCedulaPersona = formateada;
   }
 
   descargarExcel(): void {
