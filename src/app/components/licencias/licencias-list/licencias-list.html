@@ -11,12 +11,22 @@
     {{ mensajeError }}
   </div>
 
+  <div class="alert alert-info" *ngIf="mensajeInfo && !mensajeError">
+    {{ mensajeInfo }}
+  </div>
+
   <div class="card shadow mb-4">
     <div class="card-body bg-light">
       <div class="row align-items-end g-3">
         <div class="col-md-2">
-          <label class="form-label fw-medium text-muted small mb-1">ID Persona</label>
-          <input type="number" min="0" class="form-control" [(ngModel)]="filtroIdPersona">
+          <label class="form-label fw-medium text-muted small mb-1">Cédula Persona</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="###-#######-#"
+            maxlength="13"
+            [ngModel]="filtroCedulaPersona"
+            (input)="onCedulaInput($event)">
         </div>
 
         <div class="col-md-2">
