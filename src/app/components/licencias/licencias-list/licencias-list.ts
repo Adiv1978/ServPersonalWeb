@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -16,7 +16,7 @@ import { finalize } from 'rxjs';
   templateUrl: './licencias-list.html',
   styleUrls: ['./licencias-list.css']
 })
-export class LicenciasListComponent {
+export class LicenciasListComponent implements OnInit {
   listaLicencias: Licencia[] = [];
   
   // Filtros
@@ -35,6 +35,10 @@ export class LicenciasListComponent {
     private licenciasService: LicenciasService,
     private personalService: PersonalService
   ) {}
+
+  ngOnInit(): void {
+    this.cargarLicencias();
+  }
 
   cargarLicencias(): void {
     this.cargando = true;

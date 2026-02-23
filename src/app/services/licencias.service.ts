@@ -56,12 +56,19 @@ export class LicenciasService {
 
     if (response && typeof response === 'object') {
       const wrappedResponse = response as Record<string, unknown>;
-      const posiblesColecciones = ['data', 'result', 'results', 'items', 'value'];
+      const posiblesColecciones = ['data', 'result', 'results', 'items', 'value', 'datos', 'lista', 'registros', 'payload'];
 
       for (const key of posiblesColecciones) {
         const value = wrappedResponse[key];
         if (Array.isArray(value)) {
           return value as Record<string, unknown>[];
+        }
+      }
+
+      for (const value of Object.values(wrappedResponse)) {
+        const nestedArray = this.extractArray(value);
+        if (nestedArray.length > 0) {
+          return nestedArray;
         }
       }
     }
