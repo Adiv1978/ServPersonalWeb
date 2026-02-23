@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { finalize } from 'rxjs';
 import { SeguridadService } from '../../../services/seguridad.service';
 
 @Component({
@@ -60,12 +61,14 @@ export class MainLayoutComponent implements OnInit {
     const { nick, passActual, passNuevo, confirmarPass } = this.passwordForm.value;
 
     if (passNuevo !== confirmarPass) {
+      this.mensajePassword = '';
       this.errorPassword = 'La nueva contraseña y su confirmación no coinciden.';
       return;
     }
 
     const token = this.getStorageValue('token');
     if (!token) {
+      this.mensajePassword = '';
       this.errorPassword = 'No hay sesión activa. Por favor inicia sesión nuevamente.';
       return;
     }
@@ -80,15 +83,24 @@ export class MainLayoutComponent implements OnInit {
       nick,
       passActual,
       passNuevo
-    }).subscribe({
+    }).pipe(
+      finalize(() => {
+        this.guardandoPassword = false;
+      })
+    ).subscribe({
       next: (response) => {
         this.mensajePassword = response.message || 'Contraseña actualizada exitosamente.';
+        this.passwordForm.patchValue({
+          passActual: '',
+          passNuevo: '',
+          confirmarPass: ''
+        });
+        this.passwordForm.markAsPristine();
+        this.passwordForm.markAsUntouched();
       },
       error: (err) => {
+        this.mensajePassword = '';
         this.errorPassword = err.error?.message || 'No fue posible actualizar la contraseña.';
-      },
-      complete: () => {
-        this.guardandoPassword = false;
       }
     });
   }
