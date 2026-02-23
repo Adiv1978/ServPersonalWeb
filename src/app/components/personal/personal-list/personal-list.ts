@@ -4,7 +4,6 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PersonalService } from '../../../services/personal.service';
 import { Personal } from '../../../models/personal.model';
-import { finalize } from 'rxjs/operators';
 import { resolveBackendErrorMessage } from '../../../utils/http-error.utils';
 
 @Component({
@@ -27,9 +26,7 @@ export class PersonalListComponent implements OnInit {
     private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void {
-    // Se mantiene vacío para evitar llamadas automáticas al refrescar
-  }
+  ngOnInit(): void {}
 
   buscar(): void {
     if (!isPlatformBrowser(this.platformId)) return;
@@ -42,52 +39,28 @@ export class PersonalListComponent implements OnInit {
 
     const token = localStorage.getItem('token') || '';
     
-    this.personalService.getPersonal(token, 60, 0, this.busqueda)
-      .pipe(
-        finalize(() => {
-          setTimeout(() => {
-            this.cargando = false;
-            this.busquedaRealizada = true;
-            this.cdr.detectChanges(); 
-          }, 10);
-        })
-      )
-      .subscribe({
-        next: (response: any) => {
-          console.log('Respuesta del Backend:', response);
-          
-          if (Array.isArray(response)) {
-            this.listaPersonal = [...response]; 
-          } else if (response && Array.isArray(response.value)) {
-            this.listaPersonal = [...response.value];
-          } else if (response && Array.isArray(response.data)) {
-            this.listaPersonal = [...response.data];
-          } else {
-            this.listaPersonal = [];
-          }
-        },
-        error: (err) => {
-          console.error('Error en la petición:', err);
-          this.listaPersonal = [];
-          this.mensajeError = resolveBackendErrorMessage(err, 'No se encontraron resultados con esos datos.');
+    this.personalService.getPersonal(token, 60, 0, this.busqueda).subscribe({
+      next: (response: any) => {
+        if (Array.isArray(response)) {
+          this.listaPersonal = response; 
+        } else if (response && Array.isArray(response.value)) {
+          this.listaPersonal = response.value;
+        } else if (response && Array.isArray(response.data)) {
+          this.listaPersonal = response.data;
         }
-      });
-  }
-
-  obtenerIdPersona(persona: Personal | Record<string, any>): number | null {
-    const personaLike = persona as Personal & { idPersona?: number | string };
-    const idRaw = personaLike?.id ?? personaLike?.idPersona;
-    const id = Number(idRaw);
-
-    return Number.isFinite(id) && id > 0 ? id : null;
-  }
-
-  obtenerNombreCompleto(persona: Personal | Record<string, any>): string {
-    const nombreCompleto = (persona?.nombreCompleto || '').trim();
-    if (nombreCompleto) return nombreCompleto;
-
-    const nombre = (persona?.nombre || '').trim();
-    const apellidos = (persona?.apellidos || '').trim();
-    return `${nombre} ${apellidos}`.trim();
+        
+        // Se apaga inmediatamente al recibir los datos
+        this.cargando = false;
+        this.busquedaRealizada = true;
+        this.cdr.detectChanges(); 
+      },
+      error: (err) => {
+        this.listaPersonal = [];
+        this.mensajeError = resolveBackendErrorMessage(err, 'No se encontraron resultados.');
+        this.cargando = false;
+        this.busquedaRealizada = true;
+        this.cdr.detectChanges(); 
+      }
+    });
   }
 }
