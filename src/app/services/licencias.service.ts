@@ -50,18 +50,46 @@ export class LicenciasService {
   }
 
   private extractArray(response: unknown): Record<string, unknown>[] {
+    if (typeof response === 'string') {
+      try {
+        const parsed = JSON.parse(response);
+        return this.extractArray(parsed);
+      } catch {
+        return [];
+      }
+    }
+
     if (Array.isArray(response)) {
       return response as Record<string, unknown>[];
     }
 
     if (response && typeof response === 'object') {
       const wrappedResponse = response as Record<string, unknown>;
-      const posiblesColecciones = ['data', 'result', 'results', 'items', 'value', 'datos', 'lista', 'registros', 'payload'];
+      const posiblesColecciones = [
+        'data', 'Data',
+        'result', 'Result',
+        'results', 'Results',
+        'items', 'Items',
+        'value', 'Value',
+        '$values',
+        'datos', 'Datos',
+        'lista', 'Lista',
+        'registros', 'Registros',
+        'payload', 'Payload'
+      ];
 
       for (const key of posiblesColecciones) {
         const value = wrappedResponse[key];
+
         if (Array.isArray(value)) {
           return value as Record<string, unknown>[];
+        }
+
+        if (typeof value === 'string') {
+          const parsedValue = this.extractArray(value);
+          if (parsedValue.length > 0) {
+            return parsedValue;
+          }
         }
       }
 
@@ -76,26 +104,40 @@ export class LicenciasService {
     return [];
   }
 
+  private getFirstExistingValue(item: Record<string, unknown>, keys: string[]): unknown {
+    const lowerCaseMap = new Map<string, unknown>(
+      Object.entries(item).map(([k, v]) => [k.toLowerCase(), v])
+    );
+
+    for (const key of keys) {
+      const value = lowerCaseMap.get(key.toLowerCase());
+      if (value !== undefined && value !== null) {
+        return value;
+      }
+    }
+
+    return undefined;
+  }
+
   private mapLicencia(item: Record<string, unknown>): Licencia {
-    const valor = (camelCaseKey: string, pascalCaseKey: string) =>
-      item[camelCaseKey] ?? item[pascalCaseKey];
+    const valor = (...keys: string[]) => this.getFirstExistingValue(item, keys);
 
     return {
       licenciaId: Number(valor('licenciaId', 'LicenciaId') ?? 0),
-      noLicencia: String(valor('noLicencia', 'NoLicencia') ?? ''),
-      idPersona: Number(valor('idPersona', 'IdPersona') ?? 0),
-      empleadoCedula: String(valor('empleadoCedula', 'EmpleadoCedula') ?? ''),
-      empleadoNombreCompleto: String(valor('empleadoNombreCompleto', 'EmpleadoNombreCompleto') ?? ''),
-      puestoTrabajo: String(valor('puestoTrabajo', 'PuestoTrabajo') ?? ''),
-      fecLicenciaIni: (valor('fecLicenciaIni', 'FecLicenciaIni') as string | Date) ?? '',
-      fecLicenciaFin: (valor('fecLicenciaFin', 'FecLicenciaFin') as string | Date) ?? '',
-      tiempoLicencia: Number(valor('tiempoLicencia', 'TiempoLicencia') ?? 0),
+      noLicencia: String(valor('noLicencia', 'NoLicencia', 'numeroLicencia', 'NumeroLicencia') ?? ''),
+      idPersona: Number(valor('idPersona', 'IdPersona', 'personaId', 'PersonaId') ?? 0),
+      empleadoCedula: String(valor('empleadoCedula', 'EmpleadoCedula', 'cedula', 'Cedula') ?? ''),
+      empleadoNombreCompleto: String(valor('empleadoNombreCompleto', 'EmpleadoNombreCompleto', 'nombreCompleto', 'NombreCompleto') ?? ''),
+      puestoTrabajo: String(valor('puestoTrabajo', 'PuestoTrabajo', 'puesto', 'Puesto') ?? ''),
+      fecLicenciaIni: (valor('fecLicenciaIni', 'FecLicenciaIni', 'fechaInicio', 'FechaInicio') as string | Date) ?? '',
+      fecLicenciaFin: (valor('fecLicenciaFin', 'FecLicenciaFin', 'fechaFin', 'FechaFin') as string | Date) ?? '',
+      tiempoLicencia: Number(valor('tiempoLicencia', 'TiempoLicencia', 'diasLicencia', 'DiasLicencia') ?? 0),
       diagnostico: String(valor('diagnostico', 'Diagnostico') ?? ''),
       observacion: String(valor('observacion', 'Observacion') ?? ''),
       auditoria: Boolean(valor('auditoria', 'Auditoria') ?? false),
-      fechaRegistroSistema: (valor('fechaRegistroSistema', 'FechaRegistroSistema') as string | Date) ?? '',
-      registradoPorId: Number(valor('registradoPorId', 'RegistradoPorId') ?? 0),
-      registradoPorNick: String(valor('registradoPorNick', 'RegistradoPorNick') ?? '')
+      fechaRegistroSistema: (valor('fechaRegistroSistema', 'FechaRegistroSistema', 'fechaRegistro', 'FechaRegistro') as string | Date) ?? '',
+      registradoPorId: Number(valor('registradoPorId', 'RegistradoPorId', 'usuarioId', 'UsuarioId') ?? 0),
+      registradoPorNick: String(valor('registradoPorNick', 'RegistradoPorNick', 'usuarioNick', 'UsuarioNick') ?? '')
     };
   }
 
