@@ -1,5 +1,5 @@
 <div class="container mt-4">
-<div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="text-primary">Directorio de Personal</h2>
     <button class="btn btn-success shadow-sm" [routerLink]="['/home/personal/nuevo']">
       + Agregar Empleado
@@ -60,9 +60,8 @@
             <td>{{ obtenerNombreCompleto(persona) }}</td>
             <td><span class="badge bg-light text-dark border">{{ persona?.puestoTrabajo }}</span></td>
             <td class="text-center">
-              <button class="btn btn-sm btn-outline-primary me-2">Editar</button>
               <a
-                class="btn btn-sm btn-outline-success me-2"
+                class="btn btn-sm btn-outline-success"
                 [routerLink]="['/home/licencias/nuevo']"
                 [queryParams]="{
                   idPersona: persona?.id,
@@ -73,7 +72,6 @@
               >
                 Agregar licencia
               </a>
-              <button class="btn btn-sm btn-outline-danger">Eliminar</button>
             </td>
           </tr>
         </tbody>
