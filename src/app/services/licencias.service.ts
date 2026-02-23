@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { Licencia } from '../models/licencia.model';
 
 @Injectable({
@@ -38,7 +38,58 @@ export class LicenciasService {
     if (regDesde) params = params.set('regDesde', regDesde);
     if (regHasta) params = params.set('regHasta', regHasta);
 
-    return this.http.get<Licencia[]>(`${this.apiUrl}/Get`, { params });
+    return this.http.get<unknown>(`${this.apiUrl}/Get`, { params }).pipe(
+      map((response) => this.normalizeLicencias(response))
+    );
+  }
+
+  private normalizeLicencias(response: unknown): Licencia[] {
+    const licenciasCrudas = this.extractArray(response);
+
+    return licenciasCrudas.map((item) => this.mapLicencia(item));
+  }
+
+  private extractArray(response: unknown): Record<string, unknown>[] {
+    if (Array.isArray(response)) {
+      return response as Record<string, unknown>[];
+    }
+
+    if (response && typeof response === 'object') {
+      const wrappedResponse = response as Record<string, unknown>;
+      const posiblesColecciones = ['data', 'result', 'results', 'items', 'value'];
+
+      for (const key of posiblesColecciones) {
+        const value = wrappedResponse[key];
+        if (Array.isArray(value)) {
+          return value as Record<string, unknown>[];
+        }
+      }
+    }
+
+    return [];
+  }
+
+  private mapLicencia(item: Record<string, unknown>): Licencia {
+    const valor = (camelCaseKey: string, pascalCaseKey: string) =>
+      item[camelCaseKey] ?? item[pascalCaseKey];
+
+    return {
+      licenciaId: Number(valor('licenciaId', 'LicenciaId') ?? 0),
+      noLicencia: String(valor('noLicencia', 'NoLicencia') ?? ''),
+      idPersona: Number(valor('idPersona', 'IdPersona') ?? 0),
+      empleadoCedula: String(valor('empleadoCedula', 'EmpleadoCedula') ?? ''),
+      empleadoNombreCompleto: String(valor('empleadoNombreCompleto', 'EmpleadoNombreCompleto') ?? ''),
+      puestoTrabajo: String(valor('puestoTrabajo', 'PuestoTrabajo') ?? ''),
+      fecLicenciaIni: (valor('fecLicenciaIni', 'FecLicenciaIni') as string | Date) ?? '',
+      fecLicenciaFin: (valor('fecLicenciaFin', 'FecLicenciaFin') as string | Date) ?? '',
+      tiempoLicencia: Number(valor('tiempoLicencia', 'TiempoLicencia') ?? 0),
+      diagnostico: String(valor('diagnostico', 'Diagnostico') ?? ''),
+      observacion: String(valor('observacion', 'Observacion') ?? ''),
+      auditoria: Boolean(valor('auditoria', 'Auditoria') ?? false),
+      fechaRegistroSistema: (valor('fechaRegistroSistema', 'FechaRegistroSistema') as string | Date) ?? '',
+      registradoPorId: Number(valor('registradoPorId', 'RegistradoPorId') ?? 0),
+      registradoPorNick: String(valor('registradoPorNick', 'RegistradoPorNick') ?? '')
+    };
   }
 
   getExcel(token: string, minutos: number, idPersona: number = 0, fecIni?: string, fecFin?: string): Observable<Blob> {
