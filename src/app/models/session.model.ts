@@ -9,3 +9,11 @@ export interface Session {
     usuarioId: number;
     rol: number;
 }
+
+export interface UpdatePasswordRequest {
+    token: string;
+    minutos: number;
+    nick: string;
+    passActual: string;
+    passNuevo: string;
+}

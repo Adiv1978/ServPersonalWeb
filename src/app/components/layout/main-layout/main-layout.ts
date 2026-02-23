@@ -1,25 +1,118 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { SeguridadService } from '../../../services/seguridad.service';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule], // RouterModule es vital aquí
+  imports: [CommonModule, RouterModule, ReactiveFormsModule],
   templateUrl: './main-layout.html',
   styleUrls: ['./main-layout.css']
 })
-export class MainLayoutComponent {
+export class MainLayoutComponent implements OnInit {
+  mostrarVentanaPassword: boolean = false;
+  passwordForm!: FormGroup;
+  mensajePassword: string = '';
+  errorPassword: string = '';
+  guardandoPassword: boolean = false;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private fb: FormBuilder,
+    private seguridadService: SeguridadService
+  ) {}
+
+  ngOnInit(): void {
+    this.passwordForm = this.fb.group({
+      nick: [this.getStorageValue('nick'), [Validators.required]],
+      passActual: ['', [Validators.required]],
+      passNuevo: ['', [Validators.required, Validators.minLength(6)]],
+      confirmarPass: ['', [Validators.required]]
+    });
+  }
+
+  abrirVentanaPassword(): void {
+    this.mostrarVentanaPassword = true;
+    this.mensajePassword = '';
+    this.errorPassword = '';
+  }
+
+  cerrarVentanaPassword(): void {
+    this.mostrarVentanaPassword = false;
+    this.guardandoPassword = false;
+    this.passwordForm.patchValue({
+      passActual: '',
+      passNuevo: '',
+      confirmarPass: ''
+    });
+    this.passwordForm.markAsPristine();
+    this.passwordForm.markAsUntouched();
+  }
+
+  actualizarPassword(): void {
+    if (this.passwordForm.invalid) {
+      this.passwordForm.markAllAsTouched();
+      return;
+    }
+
+    const { nick, passActual, passNuevo, confirmarPass } = this.passwordForm.value;
+
+    if (passNuevo !== confirmarPass) {
+      this.errorPassword = 'La nueva contraseña y su confirmación no coinciden.';
+      return;
+    }
+
+    const token = this.getStorageValue('token');
+    if (!token) {
+      this.errorPassword = 'No hay sesión activa. Por favor inicia sesión nuevamente.';
+      return;
+    }
+
+    this.guardandoPassword = true;
+    this.errorPassword = '';
+    this.mensajePassword = '';
+
+    this.seguridadService.updatePassword({
+      token,
+      minutos: 60,
+      nick,
+      passActual,
+      passNuevo
+    }).subscribe({
+      next: (response) => {
+        this.mensajePassword = response.message || 'Contraseña actualizada exitosamente.';
+      },
+      error: (err) => {
+        this.errorPassword = err.error?.message || 'No fue posible actualizar la contraseña.';
+      },
+      complete: () => {
+        this.guardandoPassword = false;
+      }
+    });
+  }
+
+
+  private getStorageValue(key: string): string {
+    if (typeof localStorage === 'undefined') {
+      return '';
+    }
+    return localStorage.getItem(key) || '';
+  }
+
+  private removeStorageValue(key: string): void {
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
+    localStorage.removeItem(key);
+  }
 
   logout(): void {
-    // Limpiamos los datos de la sesión guardados previamente
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuarioId');
-    localStorage.removeItem('rol');
-    
-    // Redirigimos al Login
+    this.removeStorageValue('token');
+    this.removeStorageValue('usuarioId');
+    this.removeStorageValue('rol');
+    this.removeStorageValue('nick');
     this.router.navigate(['/login']);
   }
 }
