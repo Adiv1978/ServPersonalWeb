@@ -32,16 +32,12 @@ export class PersonalListComponent implements OnInit {
   }
 
   buscar(): void {
-    // Protección para no tocar localStorage en el servidor (Node.js)
     if (!isPlatformBrowser(this.platformId)) return;
 
-    // 1. LIMPIEZA ABSOLUTA: Vaciamos la plantilla inmediatamente
     this.listaPersonal = []; 
     this.mensajeError = '';
     this.busquedaRealizada = false;
     this.cargando = true;
-    
-    // 2. FORZAR REPINTADO: Obligamos a Angular a ocultar la tabla antigua AHORA
     this.cdr.detectChanges(); 
 
     const token = localStorage.getItem('token') || '';
@@ -52,7 +48,7 @@ export class PersonalListComponent implements OnInit {
           setTimeout(() => {
             this.cargando = false;
             this.busquedaRealizada = true;
-            this.cdr.detectChanges(); // Repintado final (muestra tabla nueva o mensaje)
+            this.cdr.detectChanges(); 
           }, 10);
         })
       )
@@ -67,17 +63,12 @@ export class PersonalListComponent implements OnInit {
           } else if (response && Array.isArray(response.data)) {
             this.listaPersonal = [...response.data];
           } else {
-            // Si el backend responde 200 OK pero sin datos útiles
             this.listaPersonal = [];
           }
         },
         error: (err) => {
           console.error('Error en la petición:', err);
-          // Si enviamos datos incorrectos y .NET arroja error (ej. 400 o 404)
-          // Garantizamos que la lista se mantenga vacía y mostramos un error amigable
           this.listaPersonal = [];
-          
-          // Muestra el mensaje de error del backend si existe, o uno genérico
           this.mensajeError = resolveBackendErrorMessage(err, 'No se encontraron resultados con esos datos.');
         }
       });

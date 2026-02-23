@@ -64,10 +64,10 @@
                 class="btn btn-sm btn-outline-success"
                 [routerLink]="['/home/licencias/nuevo']"
                 [queryParams]="{
-                  idPersona: persona?.id,
-                  cedula: persona?.cedula,
-                  nombreCompleto: persona?.nombreCompleto,
-                  puestoTrabajo: persona?.puestoTrabajo
+                  idPersona: obtenerIdPersona(persona),
+                  cedula: persona?.cedula || '',
+                  nombreCompleto: obtenerNombreCompleto(persona),
+                  puestoTrabajo: persona?.puestoTrabajo || ''
                 }"
               >
                 Agregar licencia
