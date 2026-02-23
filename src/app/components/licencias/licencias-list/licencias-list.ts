@@ -7,6 +7,7 @@ import { Licencia } from '../../../models/licencia.model';
 import { PersonalService } from '../../../services/personal.service';
 import { Personal } from '../../../models/personal.model';
 import { resolveBackendErrorMessage } from '../../../utils/http-error.utils';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-licencias-list',
@@ -85,13 +86,15 @@ export class LicenciasListComponent {
     regDesde?: string,
     regHasta?: string
   ): void {
+    this.mensajeError = '';
+    this.mensajeInfo = '';
 
     this.licenciasService
       .getLicencias(token, minutos, idPersona, fecIni, fecFin, regDesde, regHasta)
       .pipe(finalize(() => (this.cargando = false)))
       .subscribe({
         next: (data) => {
-          this.listaLicencias = Array.isArray(data) ? data : [];
+          this.listaLicencias = data;
 
           if (this.listaLicencias.length === 0) {
             this.mensajeInfo = 'Registro no encontrado.';
@@ -99,18 +102,9 @@ export class LicenciasListComponent {
         },
         error: (err) => {
           this.listaLicencias = [];
-          this.mensajeError = err.error?.message || 'Error al cargar las licencias médicas.';
+          this.mensajeError = resolveBackendErrorMessage(err, 'Error al cargar las licencias médicas.');
         }
-      },
-      error: (err) => {
-        this.listaLicencias = [];
-        this.mensajeError = resolveBackendErrorMessage(err, 'Error al cargar las licencias médicas.');
-        this.cargando = false;
-      },
-      complete: () => {
-        this.cargando = false;
-      }
-    });
+      });
   }
 
   buscar(): void {
