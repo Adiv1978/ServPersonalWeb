@@ -54,7 +54,7 @@
           <button class="btn btn-dark px-4" (click)="buscar()">Filtrar</button>
           <button class="btn btn-success" (click)="descargarExcel()" [disabled]="descargando || listaLicencias.length === 0">
             <span *ngIf="descargando" class="spinner-border spinner-border-sm me-2"></span>
-            <i class="bi bi-file-earmark-excel me-1"></i> Exportar Excel
+            <i class="bi bi-file-earmark-excel me-1"></i> Exportar
           </button>
         </div>
 
@@ -102,9 +102,15 @@
                 <span class="badge bg-secondary" *ngIf="!lic.auditoria">No</span>
               </td>
             </tr>
+            
             <tr *ngIf="listaLicencias.length === 0">
               <td colspan="7" class="text-center text-muted py-4">
-                No se encontraron licencias médicas para los filtros seleccionados.
+                <span *ngIf="!busquedaRealizada">
+                  <i class="bi bi-search me-1"></i> Utilice los filtros superiores y presione "Filtrar" para consultar.
+                </span>
+                <span *ngIf="busquedaRealizada">
+                  <i class="bi bi-exclamation-circle me-1"></i> No se encontraron licencias médicas para los filtros seleccionados.
+                </span>
               </td>
             </tr>
           </tbody>

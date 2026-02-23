@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -7,7 +7,7 @@ import { Licencia } from '../../../models/licencia.model';
 import { PersonalService } from '../../../services/personal.service';
 import { Personal } from '../../../models/personal.model';
 import { resolveBackendErrorMessage } from '../../../utils/http-error.utils';
-import { finalize } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-licencias-list',
@@ -31,26 +31,31 @@ export class LicenciasListComponent implements OnInit {
   mensajeError: string = '';
   mensajeInfo: string = '';
 
+  // Bandera para saber si el usuario ya presionó "Filtrar"
+  busquedaRealizada: boolean = false;
+
   constructor(
     private licenciasService: LicenciasService,
-    private personalService: PersonalService
+    private personalService: PersonalService,
+    private cdr: ChangeDetectorRef // Inyectamos el detector de cambios
   ) {}
 
   ngOnInit(): void {
-    // Evita ExpressionChangedAfterItHasBeenCheckedError cuando el observable
-    // resuelve de forma síncrona durante el primer ciclo de detección.
-    queueMicrotask(() => this.cargarLicencias());
+    // Lo dejamos vacío para que no cargue datos al refrescar la página
   }
 
   cargarLicencias(): void {
+    // 1. Limpieza absoluta y activación de estado de carga
     this.cargando = true;
+    this.busquedaRealizada = true; // Indicamos que se inició una búsqueda manual
     this.mensajeError = '';
     this.mensajeInfo = '';
+    this.listaLicencias = []; 
+    this.cdr.detectChanges(); // Forzamos mostrar el spinner
 
     const token = localStorage.getItem('token') || '';
     const minutos = 60;
 
-    // Pasamos los filtros (si están vacíos, se enviarán como undefined gracias a la lógica del servicio)
     const fecIni = this.filtroFecIni ? this.filtroFecIni : undefined;
     const fecFin = this.filtroFecFin ? this.filtroFecFin : undefined;
     const regDesde = this.filtroRegDesde ? this.filtroRegDesde : undefined;
@@ -66,6 +71,7 @@ export class LicenciasListComponent implements OnInit {
             this.listaLicencias = [];
             this.mensajeInfo = 'La cédula indicada no existe.';
             this.cargando = false;
+            this.cdr.detectChanges();
             return;
           }
 
@@ -75,6 +81,7 @@ export class LicenciasListComponent implements OnInit {
           this.listaLicencias = [];
           this.mensajeError = resolveBackendErrorMessage(err, 'Error al validar la cédula de la persona.');
           this.cargando = false;
+          this.cdr.detectChanges();
         }
       });
       return;
@@ -97,14 +104,19 @@ export class LicenciasListComponent implements OnInit {
 
     this.licenciasService
       .getLicencias(token, minutos, idPersona, fecIni, fecFin, regDesde, regHasta)
-      .pipe(finalize(() => (this.cargando = false)))
+      .pipe(
+        finalize(() => {
+          // Un pequeño delay asegura que Angular termine el ciclo actual antes de apagar el spinner
+          setTimeout(() => {
+            this.cargando = false;
+            this.cdr.detectChanges(); 
+          }, 10);
+        })
+      )
       .subscribe({
         next: (data) => {
-          this.listaLicencias = data;
-
-          if (this.listaLicencias.length === 0) {
-            this.mensajeInfo = 'Registro no encontrado.';
-          }
+          // Clonamos el array para forzar una nueva referencia de memoria en la tabla
+          this.listaLicencias = [...data];
         },
         error: (err) => {
           this.listaLicencias = [];
@@ -118,14 +130,19 @@ export class LicenciasListComponent implements OnInit {
   }
 
   limpiarFiltros(): void {
+    // Vaciamos los inputs
     this.filtroFecIni = '';
     this.filtroFecFin = '';
     this.filtroRegDesde = '';
     this.filtroRegHasta = '';
     this.filtroCedulaPersona = '';
+    
+    // Limpieza total visual sin llamar al backend
+    this.listaLicencias = [];
+    this.busquedaRealizada = false;
     this.mensajeError = '';
     this.mensajeInfo = '';
-    this.listaLicencias = [];
+    this.cdr.detectChanges();
   }
 
   onCedulaInput(event: Event): void {
@@ -146,33 +163,34 @@ export class LicenciasListComponent implements OnInit {
   descargarExcel(): void {
     this.descargando = true;
     this.mensajeError = '';
+    this.cdr.detectChanges();
 
     const token = localStorage.getItem('token') || '';
     const minutos = 60;
     const fecIni = this.filtroFecIni ? this.filtroFecIni : undefined;
     const fecFin = this.filtroFecFin ? this.filtroFecFin : undefined;
 
-    this.licenciasService.getExcel(token, minutos, 0, fecIni, fecFin).subscribe({
-      next: (blob) => {
-        // Crear un enlace temporal para descargar el archivo
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Reporte_Licencias_${new Date().getTime()}.xlsx`; // Nombre dinámico
-        document.body.appendChild(a);
-        a.click();
-        
-        // Limpiar el DOM
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      },
-      error: (err) => {
-        this.mensajeError = resolveBackendErrorMessage(err, 'Error al generar el archivo Excel.');
-        this.descargando = false;
-      },
-      complete: () => {
-        this.descargando = false;
-      }
-    });
+    this.licenciasService.getExcel(token, minutos, 0, fecIni, fecFin)
+      .pipe(
+        finalize(() => {
+          this.descargando = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `Reporte_Licencias_${new Date().getTime()}.xlsx`; 
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        },
+        error: (err) => {
+          this.mensajeError = resolveBackendErrorMessage(err, 'Error al generar el archivo Excel.');
+        }
+      });
   }
 }
