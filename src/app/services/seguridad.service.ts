@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { LoginRequest, Session } from '../models/session.model';
+import { LoginRequest, Session, UpdatePasswordRequest } from '../models/session.model';
 
 @Injectable({
   providedIn: 'root'
@@ -23,5 +23,9 @@ export class SeguridadService {
       .set('rolLevel', rolLevel.toString());
 
     return this.http.get<Session>(`${this.apiUrl}/Validate`, { params });
+  }
+
+  updatePassword(request: UpdatePasswordRequest): Observable<{ message: string }> {
+    return this.http.put<{ message: string }>(`${this.apiUrl}/UpdatePassword`, request);
   }
 }

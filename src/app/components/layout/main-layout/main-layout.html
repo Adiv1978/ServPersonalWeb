@@ -1,12 +1,12 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
   <div class="container-fluid">
-    
+
     <a class="navbar-brand fw-bold" routerLink="/home">ServPersonal</a>
-    
+
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    
+
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
@@ -16,8 +16,9 @@
           <a class="nav-link" routerLink="/home/licencias" routerLinkActive="active">Licencias Médicas</a>
         </li>
       </ul>
-      
-      <div class="d-flex">
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-light btn-sm" (click)="abrirVentanaPassword()">Cambiar Contraseña</button>
         <button class="btn btn-light btn-sm" (click)="logout()">Cerrar Sesión</button>
       </div>
     </div>
@@ -28,3 +29,50 @@
 <main class="container mt-4 mb-5">
   <router-outlet></router-outlet>
 </main>
+
+<div class="password-modal-backdrop" *ngIf="mostrarVentanaPassword" (click)="cerrarVentanaPassword()"></div>
+
+<div class="password-modal card shadow" *ngIf="mostrarVentanaPassword">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0">Actualizar contraseña</h5>
+      <button type="button" class="btn-close" aria-label="Close" (click)="cerrarVentanaPassword()"></button>
+    </div>
+
+    <div class="alert alert-success" *ngIf="mensajePassword">{{ mensajePassword }}</div>
+    <div class="alert alert-danger" *ngIf="errorPassword">{{ errorPassword }}</div>
+
+    <form [formGroup]="passwordForm" (ngSubmit)="actualizarPassword()">
+      <div class="mb-3">
+        <label class="form-label">Usuario</label>
+        <input type="text" class="form-control" formControlName="nick" placeholder="Ingresa tu usuario" />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Contraseña actual</label>
+        <input type="password" class="form-control" formControlName="passActual" placeholder="Ingresa tu contraseña actual" />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Nueva contraseña</label>
+        <input type="password" class="form-control" formControlName="passNuevo" placeholder="Ingresa la nueva contraseña" />
+        <div class="text-danger small mt-1" *ngIf="passwordForm.get('passNuevo')?.invalid && passwordForm.get('passNuevo')?.touched">
+          La nueva contraseña debe tener al menos 6 caracteres.
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Confirmar nueva contraseña</label>
+        <input type="password" class="form-control" formControlName="confirmarPass" placeholder="Confirma la nueva contraseña" />
+      </div>
+
+      <div class="d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-secondary" (click)="cerrarVentanaPassword()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="guardandoPassword">
+          <span *ngIf="guardandoPassword" class="spinner-border spinner-border-sm me-2"></span>
+          Guardar cambios
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

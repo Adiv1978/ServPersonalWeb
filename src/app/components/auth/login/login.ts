@@ -46,6 +46,7 @@ export class LoginComponent implements OnInit {
         localStorage.setItem('token', session.token);
         localStorage.setItem('usuarioId', session.usuarioId.toString());
         localStorage.setItem('rol', session.rol.toString());
+        localStorage.setItem('nick', this.loginForm.value.nick);
         
         // Redirigimos al Layout principal (lo crearemos después)
         this.router.navigate(['/home']); 
