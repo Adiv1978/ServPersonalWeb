@@ -37,7 +37,9 @@ export class LicenciasListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.cargarLicencias();
+    // Evita ExpressionChangedAfterItHasBeenCheckedError cuando el observable
+    // resuelve de forma síncrona durante el primer ciclo de detección.
+    queueMicrotask(() => this.cargarLicencias());
   }
 
   cargarLicencias(): void {
