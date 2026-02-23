@@ -86,12 +86,20 @@ export class LicenciasListComponent {
     regHasta?: string
   ): void {
 
-    this.licenciasService.getLicencias(token, minutos, idPersona, fecIni, fecFin, regDesde, regHasta).subscribe({
-      next: (data) => {
-        this.listaLicencias = data || [];
+    this.licenciasService
+      .getLicencias(token, minutos, idPersona, fecIni, fecFin, regDesde, regHasta)
+      .pipe(finalize(() => (this.cargando = false)))
+      .subscribe({
+        next: (data) => {
+          this.listaLicencias = Array.isArray(data) ? data : [];
 
-        if (this.listaLicencias.length === 0) {
-          this.mensajeInfo = 'Registro no encontrado.';
+          if (this.listaLicencias.length === 0) {
+            this.mensajeInfo = 'Registro no encontrado.';
+          }
+        },
+        error: (err) => {
+          this.listaLicencias = [];
+          this.mensajeError = err.error?.message || 'Error al cargar las licencias médicas.';
         }
       },
       error: (err) => {
