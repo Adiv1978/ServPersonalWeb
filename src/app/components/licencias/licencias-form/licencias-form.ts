@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { LicenciasService } from '../../../services/licencias.service';
 import { Licencia } from '../../../models/licencia.model';
+import { resolveBackendErrorMessage } from '../../../utils/http-error.utils';
 
 @Component({
   selector: 'app-licencias-form',
@@ -119,7 +120,7 @@ export class LicenciasFormComponent implements OnInit {
       },
       error: (err) => {
         // Captura excepciones de BD como "El número de licencia ya fue registrado"
-        this.mensajeError = err.error?.message || 'Error al guardar la licencia.';
+        this.mensajeError = resolveBackendErrorMessage(err, 'Error al guardar la licencia.');
         this.cargando = false;
       },
       complete: () => {

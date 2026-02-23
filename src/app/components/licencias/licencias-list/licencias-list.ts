@@ -6,7 +6,7 @@ import { LicenciasService } from '../../../services/licencias.service';
 import { Licencia } from '../../../models/licencia.model';
 import { PersonalService } from '../../../services/personal.service';
 import { Personal } from '../../../models/personal.model';
-import { finalize } from 'rxjs';
+import { resolveBackendErrorMessage } from '../../../utils/http-error.utils';
 
 @Component({
   selector: 'app-licencias-list',
@@ -66,7 +66,7 @@ export class LicenciasListComponent {
         },
         error: (err) => {
           this.listaLicencias = [];
-          this.mensajeError = err.error?.message || 'Error al validar la cédula de la persona.';
+          this.mensajeError = resolveBackendErrorMessage(err, 'Error al validar la cédula de la persona.');
           this.cargando = false;
         }
       });
@@ -101,7 +101,16 @@ export class LicenciasListComponent {
           this.listaLicencias = [];
           this.mensajeError = err.error?.message || 'Error al cargar las licencias médicas.';
         }
-      });
+      },
+      error: (err) => {
+        this.listaLicencias = [];
+        this.mensajeError = resolveBackendErrorMessage(err, 'Error al cargar las licencias médicas.');
+        this.cargando = false;
+      },
+      complete: () => {
+        this.cargando = false;
+      }
+    });
   }
 
   buscar(): void {
@@ -158,7 +167,7 @@ export class LicenciasListComponent {
         window.URL.revokeObjectURL(url);
       },
       error: (err) => {
-        this.mensajeError = 'Error al generar el archivo Excel.';
+        this.mensajeError = resolveBackendErrorMessage(err, 'Error al generar el archivo Excel.');
         this.descargando = false;
       },
       complete: () => {

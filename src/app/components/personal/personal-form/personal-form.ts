@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PersonalService } from '../../../services/personal.service';
 import { Personal } from '../../../models/personal.model';
+import { resolveBackendErrorMessage } from '../../../utils/http-error.utils';
 
 @Component({
   selector: 'app-personal-form',
@@ -69,7 +70,7 @@ export class PersonalFormComponent implements OnInit {
         }
       },
       error: (err) => {
-        this.mensajeError = 'Error al cargar los datos del empleado.';
+        this.mensajeError = resolveBackendErrorMessage(err, 'Error al cargar los datos del empleado.');
         this.cargando = false;
       },
       complete: () => {
@@ -109,8 +110,7 @@ export class PersonalFormComponent implements OnInit {
         }, 1500);
       },
       error: (err) => {
-        // Aquí capturamos el RAISE EXCEPTION si la cédula está duplicada
-        this.mensajeError = err.error?.message || 'Error al guardar el registro.';
+        this.mensajeError = resolveBackendErrorMessage(err, 'Error al guardar el registro.');
         this.cargando = false;
       },
       complete: () => {
