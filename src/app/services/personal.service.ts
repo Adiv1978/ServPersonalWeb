@@ -7,7 +7,7 @@ import { Personal } from '../models/personal.model';
   providedIn: 'root'
 })
 export class PersonalService {
-  private apiUrl = 'https://localhost:32785/api/Personal';
+  private apiUrl = 'https://localhost:32787/api/Personal';
 
   constructor(private http: HttpClient) { }
 

@@ -8,7 +8,7 @@ import { LoginRequest, Session } from '../models/session.model';
 })
 export class SeguridadService {
   // NOTA: Cambia este puerto por el que te muestra Visual Studio al correr tu API
-  private apiUrl = 'https://localhost:32785/api/Seguridad'; 
+  private apiUrl = 'https://localhost:32787/api/Seguridad'; 
 
   constructor(private http: HttpClient) { }
 
