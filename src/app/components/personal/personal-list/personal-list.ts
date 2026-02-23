@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { PersonalService } from '../../../services/personal.service';
 import { Personal } from '../../../models/personal.model';
 import { finalize } from 'rxjs/operators';
+import { resolveBackendErrorMessage } from '../../../utils/http-error.utils';
 
 @Component({
   selector: 'app-personal-list',
@@ -77,7 +78,7 @@ export class PersonalListComponent implements OnInit {
           this.listaPersonal = [];
           
           // Muestra el mensaje de error del backend si existe, o uno genérico
-          this.mensajeError = err.error?.message || 'No se encontraron resultados con esos datos.';
+          this.mensajeError = resolveBackendErrorMessage(err, 'No se encontraron resultados con esos datos.');
         }
       });
   }
