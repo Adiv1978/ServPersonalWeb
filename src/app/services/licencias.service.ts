@@ -7,7 +7,7 @@ import { Licencia } from '../models/licencia.model';
   providedIn: 'root'
 })
 export class LicenciasService {
-  private apiUrl = 'https://localhost:32787/api/Licencias';
+  private apiUrl = 'https://10.8.0.1:7180/api/Licencias';
 
   constructor(private http: HttpClient) { }
 
@@ -37,6 +37,7 @@ export class LicenciasService {
     if (fecFin) params = params.set('fecFin', fecFin);
     if (regDesde) params = params.set('regDesde', regDesde);
     if (regHasta) params = params.set('regHasta', regHasta);
+    
 
     return this.http.get<unknown>(`${this.apiUrl}/Get`, { params }).pipe(
       map((response) => this.normalizeLicencias(response))
