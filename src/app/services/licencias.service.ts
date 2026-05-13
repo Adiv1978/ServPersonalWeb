@@ -120,7 +120,7 @@ export class LicenciasService {
     return undefined;
   }
 
-  private mapLicencia(item: Record<string, unknown>): Licencia {
+ private mapLicencia(item: Record<string, unknown>): Licencia {
     const valor = (...keys: string[]) => this.getFirstExistingValue(item, keys);
 
     return {
@@ -133,6 +133,7 @@ export class LicenciasService {
       fecLicenciaIni: (valor('fecLicenciaIni', 'FecLicenciaIni', 'fechaInicio', 'FechaInicio') as string | Date) ?? '',
       fecLicenciaFin: (valor('fecLicenciaFin', 'FecLicenciaFin', 'fechaFin', 'FechaFin') as string | Date) ?? '',
       tiempoLicencia: Number(valor('tiempoLicencia', 'TiempoLicencia', 'diasLicencia', 'DiasLicencia') ?? 0),
+      diaFaltantes: Number(valor('diaFaltantes', 'DiaFaltantes') ?? 0), // <--- NUEVA LÍNEA AGREGADA
       diagnostico: String(valor('diagnostico', 'Diagnostico') ?? ''),
       observacion: String(valor('observacion', 'Observacion') ?? ''),
       auditoria: Boolean(valor('auditoria', 'Auditoria') ?? false),
@@ -154,4 +155,26 @@ export class LicenciasService {
     // responseType 'blob' indica que esperamos un archivo
     return this.http.get(`${this.apiUrl}/GetExcel`, { params, responseType: 'blob' });
   }
+
+  getLicenciasActivas(numeroPagina: number, tamanioPagina: number): Observable<Licencia[]> {
+  const params = new HttpParams()
+    .set('numeroPagina', numeroPagina.toString())
+    .set('tamanioPagina', tamanioPagina.toString());
+
+  return this.http.get<unknown>(`${this.apiUrl}/GetActivas`, { params }).pipe(
+    map((response) => this.normalizeLicencias(response))
+  );
+}
+
+getExcelActivas(numeroPagina: number, tamanioPagina: number): Observable<Blob> {
+  const params = new HttpParams()
+    .set('numeroPagina', numeroPagina.toString())
+    .set('tamanioPagina', tamanioPagina.toString());
+
+  return this.http.get(`${this.apiUrl}/GetExcelActivas`, { 
+    params, 
+    responseType: 'blob' 
+  });
+}
+
 }

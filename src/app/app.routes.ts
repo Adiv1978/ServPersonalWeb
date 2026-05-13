@@ -6,6 +6,7 @@ import { PersonalFormComponent } from './components/personal/personal-form/perso
 import { LicenciasListComponent } from './components/licencias/licencias-list/licencias-list';
 import { LicenciasFormComponent } from './components/licencias/licencias-form/licencias-form';
 import { authGuard } from './guards/auth-guard';
+import { LicenciasActivasComponent } from './components/licencias/licencias-activas/licencias-activas';
 
 export const routes: Routes = [
     { path: 'login', component: LoginComponent },
@@ -18,6 +19,7 @@ export const routes: Routes = [
       { path: 'personal/editar/:id', component: PersonalFormComponent },      
       { path: 'licencias', component: LicenciasListComponent },
       { path: 'licencias/nuevo', component: LicenciasFormComponent },
+      { path: 'licencias/activas', component: LicenciasActivasComponent },
       { path: '', redirectTo: 'personal', pathMatch: 'full' } 
     ]
   },

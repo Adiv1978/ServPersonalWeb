@@ -13,6 +13,7 @@ export interface Licencia {
     fecLicenciaIni: string | Date;
     fecLicenciaFin: string | Date;
     tiempoLicencia?: number; // Autocalculado
+    diaFaltantes?: number;   // <--- NUEVA PROPIEDAD
     
     // Detalles Médicos y Auditoría
     diagnostico: string;

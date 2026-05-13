@@ -1,0 +1,55 @@
+<div class="container-fluid py-3">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h3 mb-0 text-gray-800">Licencias Médicas Activas</h2>
+    <button class="btn btn-success shadow-sm" (click)="descargarExcel()" [disabled]="descargando || listaActivas.length === 0">
+      <span *ngIf="descargando" class="spinner-border spinner-border-sm me-2"></span>
+      <i class="bi bi-file-earmark-excel me-1"></i> Excel
+    </button>
+  </div>
+
+  <div class="alert alert-danger" *ngIf="mensajeError">{{ mensajeError }}</div>
+
+  <div class="card shadow mb-4">
+    <div class="card-body">
+      <div class="text-center py-5" *ngIf="cargando">
+        <div class="spinner-border text-primary"></div>
+      </div>
+
+      <div class="table-responsive" *ngIf="!cargando">
+        <table class="table table-striped align-middle">
+          <thead class="table-dark">
+            <tr>
+              <th>No. Licencia</th>
+              <th>Empleado</th>
+              <th>Vence</th>
+              <th class="text-center">Días Faltantes</th>
+              <th>Diagnóstico</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let lic of listaActivas">
+              <td class="fw-bold">{{ lic.noLicencia }}</td>
+              <td>
+                <div class="fw-medium">{{ lic.empleadoNombreCompleto }}</div>
+                <div class="text-muted small">{{ lic.empleadoCedula }}</div>
+              </td>
+              <td>{{ lic.fecLicenciaFin | date:'dd/MM/yyyy' }}</td>
+              <td class="text-center">
+                <span class="badge" [ngClass]="lic.diaFaltantes! <= 3 ? 'bg-danger' : 'bg-warning text-dark'">
+                  {{ lic.diaFaltantes }} días
+                </span>
+              </td>
+              <td>{{ lic.diagnostico }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-center gap-2 mt-3" *ngIf="listaActivas.length > 0">
+        <button class="btn btn-outline-secondary btn-sm" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">Anterior</button>
+        <span class="align-self-center">Página {{ paginaActual }}</span>
+        <button class="btn btn-outline-secondary btn-sm" [disabled]="listaActivas.length < tamanioPagina" (click)="cambiarPagina(paginaActual + 1)">Siguiente</button>
+      </div>
+    </div>
+  </div>
+</div>
