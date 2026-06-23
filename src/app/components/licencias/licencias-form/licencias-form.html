@@ -32,18 +32,28 @@
         </div>
 
         <div class="row mb-3">
-          <div class="col-md-6">
+          <div class="col-md-4">
             <label for="fecLicenciaIni" class="form-label fw-medium">Fecha de Inicio</label>
             <input type="date" id="fecLicenciaIni" class="form-control" formControlName="fecLicenciaIni"
                    [ngClass]="{'is-invalid': licenciaForm.get('fecLicenciaIni')?.invalid && licenciaForm.get('fecLicenciaIni')?.touched}">
             <div class="invalid-feedback">La fecha de inicio es requerida.</div>
           </div>
 
-          <div class="col-md-6 mt-3 mt-md-0">
+          <div class="col-md-2 mt-3 mt-md-0">
+            <label for="cantidadDias" class="form-label fw-medium">Cantidad Días</label>
+            <input type="number" id="cantidadDias" class="form-control" formControlName="cantidadDias"
+                   min="1" placeholder="0"
+                   [ngClass]="{'is-invalid': licenciaForm.get('cantidadDias')?.invalid && licenciaForm.get('cantidadDias')?.touched}">
+            <div class="invalid-feedback">Ingrese al menos 1 día.</div>
+          </div>
+
+          <div class="col-md-4 mt-3 mt-md-0">
             <label for="fecLicenciaFin" class="form-label fw-medium">Fecha de Fin</label>
-            <input type="date" id="fecLicenciaFin" class="form-control" formControlName="fecLicenciaFin"
+            <input type="date" id="fecLicenciaFin" class="form-control bg-light" formControlName="fecLicenciaFin"
+                   readonly
                    [ngClass]="{'is-invalid': licenciaForm.get('fecLicenciaFin')?.invalid && licenciaForm.get('fecLicenciaFin')?.touched}">
-            <div class="invalid-feedback">La fecha de fin es requerida.</div>
+            <div class="invalid-feedback">Ingrese fecha de inicio y cantidad de días.</div>
+            <small class="text-muted">Se calcula automáticamente.</small>
           </div>
         </div>
 

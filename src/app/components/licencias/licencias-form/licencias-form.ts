@@ -43,11 +43,34 @@ export class LicenciasFormComponent implements OnInit {
       idPersona: [null, [Validators.required]],
       noLicencia: ['', [Validators.required, Validators.maxLength(50)]],
       fecLicenciaIni: ['', [Validators.required]],
+      cantidadDias: [null, [Validators.required, Validators.min(1)]],
       fecLicenciaFin: ['', [Validators.required]],
       diagnostico: ['', [Validators.required, Validators.maxLength(255)]],
       observacion: [''],
-      auditoria: [false] // Checkbox por defecto desmarcado
+      auditoria: [false]
     });
+
+    this.licenciaForm.get('fecLicenciaIni')!.valueChanges.subscribe(() => this.calcularFechaFin());
+    this.licenciaForm.get('cantidadDias')!.valueChanges.subscribe(() => this.calcularFechaFin());
+  }
+
+  calcularFechaFin(): void {
+    const fecIni = this.licenciaForm.get('fecLicenciaIni')?.value as string;
+    const dias = Number(this.licenciaForm.get('cantidadDias')?.value);
+
+    if (fecIni && dias > 0) {
+      const [year, month, day] = fecIni.split('-').map(Number);
+      const fecha = new Date(year, month - 1, day);
+      fecha.setDate(fecha.getDate() + dias);
+
+      const yyyy = fecha.getFullYear();
+      const mm = String(fecha.getMonth() + 1).padStart(2, '0');
+      const dd = String(fecha.getDate()).padStart(2, '0');
+
+      this.licenciaForm.get('fecLicenciaFin')!.setValue(`${yyyy}-${mm}-${dd}`, { emitEvent: false });
+    } else {
+      this.licenciaForm.get('fecLicenciaFin')!.setValue('', { emitEvent: false });
+    }
   }
 
   cargarPersonaDesdeRuta(): void {
@@ -81,15 +104,6 @@ export class LicenciasFormComponent implements OnInit {
 
     if (!this.personaSeleccionada) {
       this.mensajeError = 'No hay una persona seleccionada para asociar la licencia.';
-      return;
-    }
-
-    // Validación extra en frontend (PostgreSQL también lo valida, pero mejoramos la UX)
-    const ini = new Date(this.licenciaForm.value.fecLicenciaIni);
-    const fin = new Date(this.licenciaForm.value.fecLicenciaFin);
-    
-    if (fin < ini) {
-      this.mensajeError = 'La fecha de fin no puede ser anterior a la fecha de inicio.';
       return;
     }
 
