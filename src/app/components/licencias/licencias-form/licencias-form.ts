@@ -22,6 +22,10 @@ export class LicenciasFormComponent implements OnInit {
     puestoTrabajo: string;
   } | null = null;
   
+  archivosSeleccionados: File[] = [];
+  mostrarSeccionArchivos = false;
+  errorArchivos = '';
+
   cargando: boolean = false;
   mensajeError: string = '';
   mensajeExito: string = '';
@@ -73,6 +77,30 @@ export class LicenciasFormComponent implements OnInit {
     }
   }
 
+  toggleSeccionArchivos(): void {
+    this.mostrarSeccionArchivos = !this.mostrarSeccionArchivos;
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files) return;
+
+    this.errorArchivos = '';
+    const seleccionados = Array.from(input.files);
+    const soloPNG = seleccionados.filter(f => f.type === 'image/png' || f.name.toLowerCase().endsWith('.png'));
+
+    if (soloPNG.length !== seleccionados.length) {
+      this.errorArchivos = 'Solo se permiten archivos PNG. Los archivos de otro tipo fueron ignorados.';
+    }
+
+    this.archivosSeleccionados = [...this.archivosSeleccionados, ...soloPNG];
+    input.value = '';
+  }
+
+  removerArchivo(index: number): void {
+    this.archivosSeleccionados = this.archivosSeleccionados.filter((_, i) => i !== index);
+  }
+
   cargarPersonaDesdeRuta(): void {
     const params = this.route.snapshot.queryParamMap;
 
@@ -112,20 +140,29 @@ export class LicenciasFormComponent implements OnInit {
     this.mensajeExito = '';
 
     const token = localStorage.getItem('token') || '';
-    
-    // Mapeamos los datos al modelo
+    const registradoPorId = Number(localStorage.getItem('usuarioId') || 0);
+    const registradoPorNick = localStorage.getItem('nick') || '';
+
     const licenciaGuardar: Licencia = {
-      licenciaId: 0, // 0 porque es una inserción nueva
+      licenciaId: 0,
       idPersona: Number(this.licenciaForm.value.idPersona),
       noLicencia: this.licenciaForm.value.noLicencia,
+      empleadoCedula: this.personaSeleccionada!.cedula,
+      empleadoNombreCompleto: this.personaSeleccionada!.nombreCompleto,
+      puestoTrabajo: this.personaSeleccionada!.puestoTrabajo,
       fecLicenciaIni: this.licenciaForm.value.fecLicenciaIni,
       fecLicenciaFin: this.licenciaForm.value.fecLicenciaFin,
+      tiempoLicencia: Number(this.licenciaForm.value.cantidadDias),
+      diaFaltantes: 0,
       diagnostico: this.licenciaForm.value.diagnostico,
       observacion: this.licenciaForm.value.observacion,
-      auditoria: this.licenciaForm.value.auditoria
+      auditoria: this.licenciaForm.value.auditoria,
+      fechaRegistroSistema: new Date().toISOString(),
+      registradoPorId,
+      registradoPorNick
     };
 
-    this.licenciasService.setLicencias(token, 60, licenciaGuardar).subscribe({
+    this.licenciasService.setLicencias(token, 60, licenciaGuardar, this.archivosSeleccionados).subscribe({
       next: (res) => {
         this.mensajeExito = res.message || 'Licencia registrada exitosamente.';
         setTimeout(() => {

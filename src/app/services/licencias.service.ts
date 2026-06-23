@@ -11,12 +11,34 @@ export class LicenciasService {
 
   constructor(private http: HttpClient) { }
 
-  setLicencias(token: string, minutos: number, licencia: Licencia): Observable<any> {
+  setLicencias(token: string, minutos: number, licencia: Licencia, archivos: File[] = []): Observable<any> {
     const params = new HttpParams()
       .set('token', token)
       .set('minutos', minutos.toString());
 
-    return this.http.post<any>(`${this.apiUrl}/Set`, licencia, { params });
+    const formData = new FormData();
+    formData.append('LicenciaId', String(licencia.licenciaId));
+    formData.append('NoLicencia', licencia.noLicencia);
+    formData.append('IdPersona', String(licencia.idPersona));
+    formData.append('EmpleadoCedula', licencia.empleadoCedula ?? '');
+    formData.append('EmpleadoNombreCompleto', licencia.empleadoNombreCompleto ?? '');
+    formData.append('PuestoTrabajo', licencia.puestoTrabajo ?? '');
+    formData.append('FecLicenciaIni', licencia.fecLicenciaIni.toString());
+    formData.append('FecLicenciaFin', licencia.fecLicenciaFin.toString());
+    formData.append('TiempoLicencia', String(licencia.tiempoLicencia ?? 0));
+    formData.append('DiaFaltantes', String(licencia.diaFaltantes ?? 0));
+    formData.append('Diagnostico', licencia.diagnostico);
+    formData.append('Observacion', licencia.observacion ?? '');
+    formData.append('Auditoria', String(licencia.auditoria));
+    formData.append('FechaRegistroSistema', licencia.fechaRegistroSistema?.toString() ?? new Date().toISOString());
+    formData.append('RegistradoPorId', String(licencia.registradoPorId ?? 0));
+    formData.append('RegistradoPorNick', licencia.registradoPorNick ?? '');
+
+    for (const archivo of archivos) {
+      formData.append('archivosPdf', archivo, archivo.name);
+    }
+
+    return this.http.post<any>(`${this.apiUrl}/Set`, formData, { params });
   }
 
   getLicencias(
