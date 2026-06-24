@@ -1,0 +1,77 @@
+<div class="modal-overlay" (click)="onCerrar()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="modal-header-custom">
+      <h5 class="mb-0 fw-semibold">Actualizar Licencia Médica</h5>
+      <button type="button" class="btn-close" (click)="onCerrar()" [disabled]="cargando"></button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body-custom">
+
+      <!-- Info de la licencia -->
+      <div class="alert alert-info py-2 mb-3" *ngIf="licencia">
+        <div class="fw-semibold">No. {{ licencia.noLicencia }}</div>
+        <div class="small"><strong>Empleado:</strong> {{ licencia.empleadoNombreCompleto }} &mdash; C.I: {{ licencia.empleadoCedula }}</div>
+      </div>
+
+      <div class="alert alert-danger py-2" *ngIf="mensajeError">{{ mensajeError }}</div>
+      <div class="alert alert-success py-2" *ngIf="mensajeExito">{{ mensajeExito }}</div>
+
+      <form [formGroup]="updateForm" (ngSubmit)="guardar()">
+
+        <!-- Fechas -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-medium">Fecha de Inicio</label>
+            <input type="date" class="form-control" formControlName="fecLicenciaIni"
+                   [ngClass]="{'is-invalid': updateForm.get('fecLicenciaIni')?.invalid && updateForm.get('fecLicenciaIni')?.touched}">
+            <div class="invalid-feedback">La fecha de inicio es requerida.</div>
+          </div>
+          <div class="col-md-6 mt-3 mt-md-0">
+            <label class="form-label fw-medium">Fecha de Fin</label>
+            <input type="date" class="form-control" formControlName="fecLicenciaFin"
+                   [ngClass]="{'is-invalid': updateForm.get('fecLicenciaFin')?.invalid && updateForm.get('fecLicenciaFin')?.touched}">
+            <div class="invalid-feedback">La fecha de fin es requerida.</div>
+          </div>
+        </div>
+
+        <!-- Diagnóstico -->
+        <div class="mb-3">
+          <label class="form-label fw-medium">Diagnóstico Médico</label>
+          <input type="text" class="form-control" formControlName="diagnostico"
+                 [ngClass]="{'is-invalid': updateForm.get('diagnostico')?.invalid && updateForm.get('diagnostico')?.touched}">
+          <div class="invalid-feedback">El diagnóstico es requerido.</div>
+        </div>
+
+        <!-- Observación -->
+        <div class="mb-3">
+          <label class="form-label fw-medium">Observaciones (Opcional)</label>
+          <textarea class="form-control" formControlName="observacion" rows="3"></textarea>
+        </div>
+
+        <!-- Auditoría -->
+        <div class="mb-4">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="updAuditoria" formControlName="auditoria">
+            <label class="form-check-label fw-medium text-danger" for="updAuditoria">Marcar para Auditoría Médica</label>
+          </div>
+        </div>
+
+        <hr class="mb-3">
+
+        <!-- Botones -->
+        <div class="d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-light" (click)="onCerrar()" [disabled]="cargando">Cancelar</button>
+          <button type="submit" class="btn btn-warning px-4" [disabled]="cargando">
+            <span *ngIf="cargando" class="spinner-border spinner-border-sm me-2" role="status"></span>
+            Guardar Actualización
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>

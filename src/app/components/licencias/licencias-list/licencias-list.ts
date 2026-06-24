@@ -8,17 +8,19 @@ import { PersonalService } from '../../../services/personal.service';
 import { Personal } from '../../../models/personal.model';
 import { resolveBackendErrorMessage } from '../../../utils/http-error.utils';
 import { finalize } from 'rxjs/operators';
+import { UpdateLicenciasComponent } from '../update-licencias/update-licencias';
 
 @Component({
   selector: 'app-licencias-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, UpdateLicenciasComponent],
   templateUrl: './licencias-list.html',
   styleUrls: ['./licencias-list.css']
 })
 export class LicenciasListComponent implements OnInit {
   listaLicencias: Licencia[] = [];
-  
+  licenciaAEditar: Licencia | null = null;
+
   // Filtros
   filtroFecIni: string = '';
   filtroFecFin: string = '';
@@ -44,6 +46,21 @@ export class LicenciasListComponent implements OnInit {
     // Lo dejamos vacío para que no cargue datos al refrescar la página
   }
 
+  abrirActualizar(lic: Licencia): void {
+    this.licenciaAEditar = { ...lic };
+  }
+
+  cerrarActualizar(): void {
+    this.licenciaAEditar = null;
+  }
+
+  onLicenciaActualizada(): void {
+    this.cerrarActualizar();
+    if (this.busquedaRealizada) {
+      this.cargarLicencias();
+    }
+  }
+
   cargarLicencias(): void {
     // 1. Limpieza absoluta y activación de estado de carga
     this.cargando = true;
@@ -54,7 +71,6 @@ export class LicenciasListComponent implements OnInit {
     this.cdr.detectChanges(); // Forzamos mostrar el spinner
 
     const token = localStorage.getItem('token') || '';
-    const minutos = 60;
 
     const fecIni = this.filtroFecIni ? this.filtroFecIni : undefined;
     const fecFin = this.filtroFecFin ? this.filtroFecFin : undefined;
@@ -63,7 +79,7 @@ export class LicenciasListComponent implements OnInit {
     const cedula = this.filtroCedulaPersona.trim();
 
     if (cedula) {
-      this.personalService.getPersonal(token, minutos, 0, cedula).subscribe({
+      this.personalService.getPersonal(token, 0, cedula).subscribe({
         next: (personas: Personal[]) => {
           const persona = personas?.[0];
 
@@ -75,7 +91,7 @@ export class LicenciasListComponent implements OnInit {
             return;
           }
 
-          this.consultarLicencias(token, minutos, persona.id, fecIni, fecFin, regDesde, regHasta);
+          this.consultarLicencias(token, persona.id, fecIni, fecFin, regDesde, regHasta);
         },
         error: (err) => {
           this.listaLicencias = [];
@@ -87,12 +103,11 @@ export class LicenciasListComponent implements OnInit {
       return;
     }
 
-    this.consultarLicencias(token, minutos, 0, fecIni, fecFin, regDesde, regHasta);
+    this.consultarLicencias(token, 0, fecIni, fecFin, regDesde, regHasta);
   }
 
   private consultarLicencias(
     token: string,
-    minutos: number,
     idPersona: number,
     fecIni?: string,
     fecFin?: string,
@@ -103,7 +118,7 @@ export class LicenciasListComponent implements OnInit {
     this.mensajeInfo = '';
 
     this.licenciasService
-      .getLicencias(token, minutos, idPersona, fecIni, fecFin, regDesde, regHasta)
+      .getLicencias(token, idPersona, fecIni, fecFin, regDesde, regHasta)
       .pipe(
         finalize(() => {
           // Un pequeño delay asegura que Angular termine el ciclo actual antes de apagar el spinner
@@ -166,11 +181,10 @@ export class LicenciasListComponent implements OnInit {
     this.cdr.detectChanges();
 
     const token = localStorage.getItem('token') || '';
-    const minutos = 60;
     const fecIni = this.filtroFecIni ? this.filtroFecIni : undefined;
     const fecFin = this.filtroFecFin ? this.filtroFecFin : undefined;
 
-    this.licenciasService.getExcel(token, minutos, 0, fecIni, fecFin)
+    this.licenciasService.getExcel(token, 0, fecIni, fecFin)
       .pipe(
         finalize(() => {
           this.descargando = false;

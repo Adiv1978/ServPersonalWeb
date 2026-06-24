@@ -79,7 +79,6 @@ export class MainLayoutComponent implements OnInit {
 
     this.seguridadService.updatePassword({
       token,
-      minutos: 60,
       nick,
       passActual,
       passNuevo

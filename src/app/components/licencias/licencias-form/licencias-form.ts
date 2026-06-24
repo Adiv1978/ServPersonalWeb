@@ -162,7 +162,7 @@ export class LicenciasFormComponent implements OnInit {
       registradoPorNick
     };
 
-    this.licenciasService.setLicencias(token, 60, licenciaGuardar, this.archivosSeleccionados).subscribe({
+    this.licenciasService.setLicencias(token, licenciaGuardar, this.archivosSeleccionados).subscribe({
       next: (res) => {
         this.mensajeExito = res.message || 'Licencia registrada exitosamente.';
         setTimeout(() => {

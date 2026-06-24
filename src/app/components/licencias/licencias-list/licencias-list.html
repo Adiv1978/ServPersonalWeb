@@ -80,10 +80,12 @@
               <th>Desde</th>
               <th>Hasta</th>
               <th class="text-center">Total Días</th>
-              <th class="text-center">Faltantes</th> <th>Diagnóstico</th>
+              <th class="text-center">Faltantes</th>
+              <th>Diagnóstico</th>
               <th class="text-center">Auditoría</th>
+              <th class="text-center">Acciones</th>
             </tr>
-          </thead>          
+          </thead>
           <tbody>
             <tr *ngFor="let lic of listaLicencias">
               <td class="fw-bold">{{ lic.noLicencia }}</td>
@@ -97,7 +99,7 @@
                 <span class="badge bg-info text-dark">{{ lic.tiempoLicencia }}</span>
               </td>
               <td class="text-center">
-                <span class="badge" 
+                <span class="badge"
                       [ngClass]="{'bg-warning text-dark': lic.diaFaltantes! > 0, 'bg-secondary': lic.diaFaltantes! <= 0}">
                   {{ lic.diaFaltantes }}
                 </span>
@@ -107,9 +109,14 @@
                 <span class="badge bg-danger" *ngIf="lic.auditoria">Sí</span>
                 <span class="badge bg-secondary" *ngIf="!lic.auditoria">No</span>
               </td>
-            </tr>            
+              <td class="text-center">
+                <button class="btn btn-sm btn-outline-warning" (click)="abrirActualizar(lic)" title="Actualizar licencia">
+                  Actualizar
+                </button>
+              </td>
+            </tr>
             <tr *ngIf="listaLicencias.length === 0">
-              <td colspan="7" class="text-center text-muted py-4">
+              <td colspan="9" class="text-center text-muted py-4">
                 <span *ngIf="!busquedaRealizada">
                   <i class="bi bi-search me-1"></i> Utilice los filtros superiores y presione "Filtrar" para consultar.
                 </span>
@@ -125,3 +132,11 @@
     </div>
   </div>
 </div>
+
+<!-- Modal de actualización de licencia -->
+<app-update-licencias
+  *ngIf="licenciaAEditar"
+  [licencia]="licenciaAEditar"
+  (cerrar)="cerrarActualizar()"
+  (actualizado)="onLicenciaActualizada()">
+</app-update-licencias>

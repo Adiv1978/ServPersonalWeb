@@ -54,9 +54,8 @@ export class PersonalFormComponent implements OnInit {
   cargarDatosEmpleado(id: number): void {
     this.cargando = true;
     const token = localStorage.getItem('token') || '';
-    const minutos = 60;
 
-    this.personalService.getPersonal(token, minutos, id).subscribe({
+    this.personalService.getPersonal(token, id).subscribe({
       next: (data) => {
         if (data.length > 0) {
           const empleado = data[0];
@@ -90,9 +89,7 @@ export class PersonalFormComponent implements OnInit {
     this.mensajeExito = '';
 
     const token = localStorage.getItem('token') || '';
-    const minutos = 60;
 
-    // Construimos el objeto DTO para enviarlo a la API
     const empleadoGuardar: Personal = {
       id: this.idPersonal, // Será 0 si es nuevo, o el ID real si es edición
       cedula: this.personalForm.value.cedula,
@@ -101,7 +98,7 @@ export class PersonalFormComponent implements OnInit {
       puestoTrabajo: this.personalForm.value.puestoTrabajo
     };
 
-    this.personalService.setPersonal(token, minutos, empleadoGuardar).subscribe({
+    this.personalService.setPersonal(token, empleadoGuardar).subscribe({
       next: (res) => {
         this.mensajeExito = res.message || 'Registro guardado exitosamente.';
         // Retrasamos la redirección 1.5 segundos para que el usuario lea el mensaje

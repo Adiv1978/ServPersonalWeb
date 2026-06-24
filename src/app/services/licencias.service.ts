@@ -7,14 +7,13 @@ import { Licencia } from '../models/licencia.model';
   providedIn: 'root'
 })
 export class LicenciasService {
-  private apiUrl = 'https://localhost:7180/api/Licencias';
+  private apiUrl = 'https://10.8.0.1:7180/api/Licencias';
 
   constructor(private http: HttpClient) { }
 
-  setLicencias(token: string, minutos: number, licencia: Licencia, archivos: File[] = []): Observable<any> {
+  setLicencias(token: string, licencia: Licencia, archivos: File[] = []): Observable<any> {
     const params = new HttpParams()
-      .set('token', token)
-      .set('minutos', minutos.toString());
+      .set('token', token);
 
     const formData = new FormData();
     formData.append('LicenciaId', String(licencia.licenciaId));
@@ -43,7 +42,6 @@ export class LicenciasService {
 
   getLicencias(
     token: string,
-    minutos: number,
     idPersona: number = 0,
     fecIni?: string,
     fecFin?: string,
@@ -52,7 +50,6 @@ export class LicenciasService {
   ): Observable<Licencia[]> {
     let params = new HttpParams()
       .set('token', token)
-      .set('minutos', minutos.toString())
       .set('idPersona', idPersona.toString());
 
     if (fecIni) params = params.set('fecIni', fecIni);
@@ -165,10 +162,21 @@ export class LicenciasService {
     };
   }
 
-  getExcel(token: string, minutos: number, idPersona: number = 0, fecIni?: string, fecFin?: string): Observable<Blob> {
+  updateLicencia(request: {
+    token: string;
+    idLicencia: number;
+    fecLicenciaIni: string;
+    fecLicenciaFin: string;
+    diagnostico: string;
+    auditoria: boolean;
+    observacion: string;
+  }): Observable<{ message: string }> {
+    return this.http.put<{ message: string }>(`${this.apiUrl}/Update`, request);
+  }
+
+  getExcel(token: string, idPersona: number = 0, fecIni?: string, fecFin?: string): Observable<Blob> {
     let params = new HttpParams()
       .set('token', token)
-      .set('minutos', minutos.toString())
       .set('idPersona', idPersona.toString());
 
     if (fecIni) params = params.set('fecIni', fecIni);

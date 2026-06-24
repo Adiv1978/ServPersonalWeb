@@ -11,22 +11,19 @@ export class PersonalService {
 
   constructor(private http: HttpClient) { }
 
-  getPersonal(token: string, minutos: number, id: number = 0, busqueda: string = ''): Observable<Personal[]> {
+  getPersonal(token: string, id: number = 0, busqueda: string = ''): Observable<Personal[]> {
     const params = new HttpParams()
       .set('token', token)
-      .set('minutos', minutos.toString())
       .set('id', id.toString())
       .set('busqueda', busqueda);
 
     return this.http.get<Personal[]>(`${this.apiUrl}/Get`, { params });
   }
 
-  setPersonal(token: string, minutos: number, personal: Personal): Observable<any> {
+  setPersonal(token: string, personal: Personal): Observable<any> {
     const params = new HttpParams()
-      .set('token', token)
-      .set('minutos', minutos.toString());
+      .set('token', token);
 
-    // El objeto personal viaja en el body, el token en la URL (query params)
     return this.http.post<any>(`${this.apiUrl}/Set`, personal, { params });
   }
 }

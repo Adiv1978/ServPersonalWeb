@@ -26,8 +26,7 @@ export class LoginComponent implements OnInit {
     // Inicializamos el formulario con sus validaciones
     this.loginForm = this.fb.group({
       nick: ['', [Validators.required]],
-      pass: ['', [Validators.required]],
-      minutos: [60, [Validators.required, Validators.min(1)]] // Por defecto 60 minutos
+      pass: ['', [Validators.required]]
     });
   }
 

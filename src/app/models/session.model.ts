@@ -1,7 +1,6 @@
 export interface LoginRequest {
     nick: string;
     pass: string;
-    minutos: number;
 }
 
 export interface Session {
@@ -12,7 +11,6 @@ export interface Session {
 
 export interface UpdatePasswordRequest {
     token: string;
-    minutos: number;
     nick: string;
     passActual: string;
     passNuevo: string;

@@ -39,7 +39,7 @@ export class PersonalListComponent implements OnInit {
 
     const token = localStorage.getItem('token') || '';
     
-    this.personalService.getPersonal(token, 60, 0, this.busqueda).subscribe({
+    this.personalService.getPersonal(token, 0, this.busqueda).subscribe({
       next: (response: any) => {
         if (Array.isArray(response)) {
           this.listaPersonal = response; 
