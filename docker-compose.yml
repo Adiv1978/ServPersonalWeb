@@ -1,9 +1,9 @@
 services:
-  serv-personal-web:
+  hosp_frontend:
     build: .
-    container_name: serv-personal-web
+    container_name: hosp_frontend
     ports:
-      - "4000:4000"   # Cambia el primer número para exponer otro puerto del host, ej: "8080:4000"
+      - "8080:4000"
     environment:
       - PORT=4000
     restart: unless-stopped
