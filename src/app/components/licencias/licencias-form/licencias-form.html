@@ -103,6 +103,10 @@
                   <small>{{ errorArchivos }}</small>
                 </div>
 
+                <div class="alert alert-danger py-2 mb-3" *ngIf="errorAnalisis">
+                  <small>{{ errorAnalisis }}</small>
+                </div>
+
                 <div class="d-flex align-items-center gap-3 mb-3">
                   <input type="file" #fileInput class="d-none" accept=".png,image/png" multiple (change)="onFileSelected($event)">
                   <button type="button" class="btn btn-outline-primary btn-sm" (click)="fileInput.click()">
@@ -120,7 +124,17 @@
                   <span class="text-secondary">&#128444;</span>
                   <span class="flex-grow-1 text-truncate small">{{ archivo.name }}</span>
                   <small class="text-muted text-nowrap">{{ (archivo.size / 1024).toFixed(1) }} KB</small>
+                  <button type="button" class="btn btn-sm btn-outline-info py-0 px-2"
+                          (click)="analizarArchivo(i)"
+                          [disabled]="analizandoIndice !== null || cargando"
+                          title="Analizar con IA y rellenar formulario">
+                    <span *ngIf="analizandoIndice === i"
+                          class="spinner-border spinner-border-sm me-1" role="status"
+                          style="width:.7rem;height:.7rem"></span>
+                    {{ analizandoIndice === i ? 'Analizando...' : 'Analizar' }}
+                  </button>
                   <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" (click)="removerArchivo(i)"
+                          [disabled]="analizandoIndice !== null"
                           title="Quitar archivo">&times;</button>
                 </div>
 

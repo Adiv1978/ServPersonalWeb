@@ -1,0 +1,9 @@
+services:
+  serv-personal-web:
+    build: .
+    container_name: serv-personal-web
+    ports:
+      - "4000:4000"   # Cambia el primer número para exponer otro puerto del host, ej: "8080:4000"
+    environment:
+      - PORT=4000
+    restart: unless-stopped

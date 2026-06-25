@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { LicenciasService } from '../../../services/licencias.service';
+import { GptService } from '../../../services/gpt.service';
 import { Licencia } from '../../../models/licencia.model';
+import { GptLicencias } from '../../../models/gpt-licencias.model';
 import { resolveBackendErrorMessage } from '../../../utils/http-error.utils';
 
 @Component({
@@ -25,6 +27,8 @@ export class LicenciasFormComponent implements OnInit {
   archivosSeleccionados: File[] = [];
   mostrarSeccionArchivos = false;
   errorArchivos = '';
+  analizandoIndice: number | null = null;
+  errorAnalisis = '';
 
   cargando: boolean = false;
   mensajeError: string = '';
@@ -33,6 +37,7 @@ export class LicenciasFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private licenciasService: LicenciasService,
+    private gptService: GptService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -99,6 +104,49 @@ export class LicenciasFormComponent implements OnInit {
 
   removerArchivo(index: number): void {
     this.archivosSeleccionados = this.archivosSeleccionados.filter((_, i) => i !== index);
+  }
+
+  analizarArchivo(index: number): void {
+    this.analizandoIndice = index;
+    this.errorAnalisis = '';
+
+    const token = localStorage.getItem('token') || '';
+    const rolLevel = Number(localStorage.getItem('rol') || 0);
+    const archivo = this.archivosSeleccionados[index];
+
+    this.gptService.analizarLicenciaPdf(token, rolLevel, archivo).subscribe({
+      next: (result: GptLicencias) => {
+        this.aplicarResultadoGpt(result);
+        this.analizandoIndice = null;
+      },
+      error: (err) => {
+        this.errorAnalisis = resolveBackendErrorMessage(err, 'Error al analizar el archivo con IA.');
+        this.analizandoIndice = null;
+      }
+    });
+  }
+
+  private aplicarResultadoGpt(result: GptLicencias): void {
+    const toDateInput = (iso: string): string => iso ? iso.substring(0, 10) : '';
+
+    const fecIniStr = toDateInput(result.fecLicenciaIni);
+    const fecFinStr = toDateInput(result.fecLicenciaFin);
+
+    let dias = 0;
+    if (fecIniStr && fecFinStr) {
+      const [y1, m1, d1] = fecIniStr.split('-').map(Number);
+      const [y2, m2, d2] = fecFinStr.split('-').map(Number);
+      const dateIni = new Date(y1, m1 - 1, d1);
+      const dateFin = new Date(y2, m2 - 1, d2);
+      dias = Math.round((dateFin.getTime() - dateIni.getTime()) / (1000 * 60 * 60 * 24));
+    }
+
+    this.licenciaForm.patchValue({
+      fecLicenciaIni: fecIniStr,
+      cantidadDias: dias > 0 ? dias : null,
+      diagnostico: result.diagnostico || '',
+      observacion: result.observacion || ''
+    });
   }
 
   cargarPersonaDesdeRuta(): void {
